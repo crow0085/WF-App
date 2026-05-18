@@ -1,109 +1,12 @@
 import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { nanoid } from 'nanoid';
+import { Relic, RelicReward, EraGroups } from '../../App';
 
-export interface RelicReward { // this is for the item offered from the relic
-  rarity: string;
-  name: string;
-  ducats: number;
-  plat: number;
+interface RelicsPageProps {
+  relics: EraGroups | undefined;
 }
 
-export interface Relic { // this is for the relic itself
-  name: string;
-  vaulted: boolean;
-  era: string;
-  uniqueName: string;
-  rewards: RelicReward[];
-}
+export default function Relics(props: RelicsPageProps) {
 
-interface EraGroups {
-  Lith: Relic[];
-  Meso: Relic[];
-  Neo: Relic[];
-  Axi: Relic[];
-  Requiem: Relic[];
-}
-
-function mapRawToRelic(rawRelic: any) {
-  const keywords = ["exceptional", "relic"];
-
-  const name = rawRelic.name.split(' ').filter((word: string) => !keywords.includes(word.toLowerCase())).join(' ');
-  const vaulted = rawRelic.vaulted;
-  const era = rawRelic.name.split(" ")[0];
-  const uniqueName = nanoid();
-
-  const rewards: RelicReward[] = rawRelic.rewards.map((reward: any) => ({
-    rarity: reward.rarity,
-    name: reward.item.name,
-    ducats: 0,
-    plat: 0
-  }));
-
-
-  return {
-    name,
-    vaulted,
-    era,
-    uniqueName,
-    rewards
-  }
-}
-
-function mapRelicsToEra(relics: Relic[]) {
-  const Lith: Relic[] = relics.filter((relic: Relic) => {
-    return relic.name.startsWith("Lith")
-  })
-
-  const Meso: Relic[] = relics.filter((relic: Relic) => {
-    return relic.name.startsWith("Meso")
-  })
-
-  const Neo: Relic[] = relics.filter((relic: Relic) => {
-    return relic.name.startsWith("Neo")
-  })
-
-  const Axi: Relic[] = relics.filter((relic: Relic) => {
-    return relic.name.startsWith("Axi")
-  })
-
-  const Requiem: Relic[] = relics.filter((relic: Relic) => {
-    return relic.name.startsWith("Requiem")
-  })
-
-
-  return {
-    Lith,
-    Meso,
-    Neo,
-    Axi,
-    Requiem
-  }
-
-}
-
-export default function Relics() {
-  const [relics, setRelics] = useState<EraGroups>();
-
-  useEffect(() => {
-
-    // Inside a function, helper, or event handler:
-    invoke('get_warframe_items', { category: 'Relics', forceFetch: false })
-      .then((data: any) => {
-        const mappedRelics = data.map(mapRawToRelic)
-        const mappedByEra = mapRelicsToEra(mappedRelics);
-        setRelics(mappedByEra);
-      })
-      .catch((error) => {
-        // If Rust hits a map_err and returns an Err(String), it ends up here
-        console.error("Rust Backend Error:", error);
-      });
-
-    if (relics != null)
-      console.log(relics)
-
-    return () => console.log('cleanup');
-  }, []);
 
   return (
     <>
@@ -112,14 +15,18 @@ export default function Relics() {
       </div>
       <div>
         {
-          relics &&
+          props.relics ?
             (
-              Object.entries(relics).map( ([eraName, relics]) => (
+              Object.entries(props.relics).map( ([eraName, relics]) => (
                 <EraAccordiion
                   eraName={eraName}
                   relics={relics}
                 />
               ))
+            )
+            :
+            (
+              <h1>Currently loading relic data</h1>
             )
         }
       </div>
