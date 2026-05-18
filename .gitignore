@@ -1,0 +1,45 @@
+# --- IDEs, Editors and System Files ---
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# --- Node / Frontend Dependency Caches ---
+node_modules/
+/dist
+/dist-ssr
+/build
+.eslintcache
+.stylelintcache
+
+# --- Environment Variables (Keep Secret!) ---
+*.local
+.env
+.env.*
+
+# --- Vite / Frontend Tooling ---
+.vite/
+.replit
+
+# --- Tauri / Rust Build Outputs ---
+# Ignores the massive target folder where Rust compiles binaries
+src-tauri/target/
+src-tauri/*.log
+
+# --- Testing / Coverage ---
+coverage/
+.nyc_output
+
+# --- Logs ---
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
