@@ -27,12 +27,12 @@ function getPlatValue(reward: RelicReward, useAveragePlat: boolean): Promise<num
   // Return the promise chain!
   return invoke("get_plat_value", { url: marketUrl })
     .then((data: any) => {
-      const avg = data.data.sell.map((item: any) => item.platinum ).reduce( (total: number, cur: number) => total + cur, 0) / data.data.sell.length;
+      const avg = data.data.sell.map((item: any) => item.platinum).reduce((total: number, cur: number) => total + cur, 0) / data.data.sell.length;
       console.log(`Average platinum: ${avg}`)
       const lowest = data.data.sell[0].platinum;
       console.log(`Lowest platinum: ${lowest}`)
       console.log(useAveragePlat)
-      const plat = useAveragePlat ?  avg : lowest
+      const plat = useAveragePlat ? avg : lowest
       return plat
     })
     .catch((error) => {
@@ -50,49 +50,49 @@ export default function Relics(props: RelicsPageProps) {
         <h1 className="text-white text-4xl text-center">Relics page</h1>
         <div className='flex gap-3'>
           <label className="text-white flex items-center gap-2 cursor-pointer select-none">
-            <input 
-              type="checkbox" 
-              checked={props.useAveragePlat} 
-              onChange={(e) => props.setUseAveragePlat(e.target.checked)} 
+            <input
+              type="checkbox"
+              checked={props.useAveragePlat}
+              onChange={(e) => props.setUseAveragePlat(e.target.checked)}
             />
             Use Average Plat Prices
           </label>
           <label className="text-white flex items-center gap-2 cursor-pointer select-none">
-            <input 
-              type="checkbox" 
-              checked={props.hideVaulted} 
-              onChange={(e) => props.setHideVaulted(e.target.checked)} 
+            <input
+              type="checkbox"
+              checked={props.hideVaulted}
+              onChange={(e) => props.setHideVaulted(e.target.checked)}
             />
             Hide vaulted
           </label>
         </div>
       </div>
       <div>
-  {
-    props.relics ?
-      (
-        Object.entries(props.relics).map(([eraName, relics]) => {
-          // 💡 Filter the individual era's relics array before passing it to the accordion
-          const displayedRelics = props.hideVaulted 
-            ? relics.filter( (relic: Relic) => !relic.vaulted)
-            : relics;
+        {
+          props.relics ?
+            (
+              Object.entries(props.relics).map(([eraName, relics]) => {
+                // 💡 Filter the individual era's relics array before passing it to the accordion
+                const displayedRelics = props.hideVaulted
+                  ? relics.filter((relic: Relic) => !relic.vaulted)
+                  : relics;
 
-          return (
-            <EraAccordion
-              key={eraName}
-              eraName={eraName}
-              relics={displayedRelics} // Passes the filtered array cleanly!
-              useAveragePlat={props.useAveragePlat}
-            />
-          );
-        })
-      )
-      :
-      (
-        <h1 className="text-white text-center">Currently loading relic data</h1>
-      )
-  }
-</div>
+                return (
+                  <EraAccordion
+                    key={eraName}
+                    eraName={eraName}
+                    relics={displayedRelics} // Passes the filtered array cleanly!
+                    useAveragePlat={props.useAveragePlat}
+                  />
+                );
+              })
+            )
+            :
+            (
+              <h1 className="text-white text-center">Currently loading relic data</h1>
+            )
+        }
+      </div>
     </>
   );
 
@@ -103,7 +103,7 @@ export default function Relics(props: RelicsPageProps) {
     return (
       <>
         <div className="p-4! bg-gray-900 border-2 border-gray-700">
-          <button className='text-start text-white w-full' onClick={() => setIsOpen(!isOpen)}>
+          <button className='p-4! w-full text-white text-start bg-gray-800 h-16' onClick={() => setIsOpen(!isOpen)}>
             <div className='flex gap-3'>
               <span>{isOpen ? "▼" : "▶"}</span>
               <span>{props.eraName}</span>
@@ -159,7 +159,7 @@ export default function Relics(props: RelicsPageProps) {
       <>
         <div className='pl-8! p-2!'>
           <button
-            className='w-full text-white text-start'
+            className='p-4! w-full text-white text-start bg-gray-800 h-16'
             onClick={async () => {
 
               const nextOpenState = !isOpen;
@@ -168,7 +168,7 @@ export default function Relics(props: RelicsPageProps) {
               if (nextOpenState && relic && !platFetched) {
                 try {
                   setIsPriceLoading(true);
-                  const platPromises = relic.rewards.map( r => getPlatValue(r, props.useAveragePlat) );
+                  const platPromises = relic.rewards.map(r => getPlatValue(r, props.useAveragePlat));
                   const platValues = await Promise.all(platPromises);
 
                   const updatedRewards = relic.rewards.map((reward, index) => ({
@@ -189,19 +189,20 @@ export default function Relics(props: RelicsPageProps) {
                 }
               }
             }}>
-            <div className='flex gap-3'>
+            <div className={`flex gap-3 ${relic?.vaulted ? "text-red-800" : "text-white"}`}>
               <span>{isOpen ? "▼" : "▶"}</span>
               <span>{relic?.name}</span>
+              <span>{relic?.vaulted ? "Vaulted" : ""}</span>
             </div>
           </button>
 
           {
             isOpen && (
-              <ul>
+              <ul className='border border-gray-700 p-5! '>
                 {
                   relic?.rewards.map((reward: RelicReward) => (
 
-                    <div className='pl-5!' key={reward.id}>
+                    <div className='' key={reward.id}>
                       <li className='flex gap-10 justify-start'>
                         <div className='w-100 text-white'>
                           <span>{reward.name}</span>
