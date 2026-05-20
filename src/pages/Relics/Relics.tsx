@@ -45,8 +45,8 @@ export default function Relics(props: RelicsPageProps) {
 
   return (
     <>
-      <div className="container">
-        <h1 className="text-white text-4xl text-center">Relics page</h1>
+      <div className=" ">
+        <h1 className="w-full text-white text-4xl text-center">Relics page</h1>
         <div className='flex gap-3'>
           <label className="text-white flex items-center gap-2 cursor-pointer select-none">
             <input
