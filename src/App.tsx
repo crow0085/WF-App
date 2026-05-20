@@ -8,56 +8,45 @@ import Equipment from "./pages/Equipment/Equipment";
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { nanoid } from 'nanoid';
+import { RelicReward, Relic, EraGroups } from "./types/types";
 
-export interface RelicReward { // this is for the item offered from the relic
-  rarity: string;
-  name: string;
-  ducats: number;
-  plat: number;
+export function getRewardRarity(reward: any) {
+  switch (reward.chance){
+    case 25.33: return "Common"
+    case 11: return "Uncommon"
+    case 2: return "Rare"
+    default: return "unkown"
+  }
 }
 
-export interface Relic { // this is for the relic itself
-  name: string;
-  vaulted: boolean;
-  era: string;
-  uniqueName: string;
-  rewards: RelicReward[];
-}
-
-export interface EraGroups {
-  Lith: Relic[];
-  Meso: Relic[];
-  Neo: Relic[];
-  Axi: Relic[];
-  Requiem: Relic[];
-}
-
-function mapRawToRelic(rawRelic: any) {
+export function mapRawToRelic(rawRelic: any) {
   const keywords = ["exceptional", "relic"];
 
   const name = rawRelic.name.split(' ').filter((word: string) => !keywords.includes(word.toLowerCase())).join(' ');
   const vaulted = rawRelic.vaulted;
   const era = rawRelic.name.split(" ")[0];
-  const uniqueName = nanoid();
+  const id = nanoid();
 
   const rewards: RelicReward[] = rawRelic.rewards.map((reward: any) => ({
-    rarity: reward.rarity,
+    rarity: getRewardRarity(reward),
+    chance: reward.chance,
     name: reward.item.name,
     ducats: 0,
-    plat: 0
-  }));
+    plat: 0,
+    id: nanoid()
+  })).sort( (a: RelicReward,b: RelicReward) => a.chance > b.chance);
 
 
   return {
     name,
     vaulted,
     era,
-    uniqueName,
+    id,
     rewards
   }
 }
 
-function mapRelicsToEra(relics: Relic[]) {
+export function mapRelicsToEra(relics: Relic[]) {
   const Lith: Relic[] = relics.filter((relic: Relic) => {
     return relic.name.startsWith("Lith")
   })
@@ -89,6 +78,20 @@ function mapRelicsToEra(relics: Relic[]) {
 
 }
 
+function NavLinkItem(props: any) {
+  return (
+    <NavLink
+      to={props.route}
+      end
+      className={({ isActive }) =>
+        `p-4! text-center hover:text-blue-200 hover:bg-gray-900 ${isActive ? "text-blue-500 font-semibold" : "text-white font-normal"}`
+      }
+    >
+      {props.title}
+    </NavLink>
+  );
+}
+
 export default function App() {
 
   const [relics, setRelics] = useState<EraGroups>();
@@ -109,52 +112,28 @@ export default function App() {
 
 
   return (
-    <Router>
-      {/* Simple navigation bar */}
-      <nav style={{ padding: "10px", background: "#242424", gap: "15px", display: "flex" }}>
+    <div className="min-h-screen bg-gray-800">
+      <Router>
+        {/* Simple navigation bar */}
+        <nav className="flex gap-4 border-2 border-gray-700 ">
 
-        <NavLink
-          to="/"
-          end
-          style={({ isActive }) => ({
-            color: isActive ? "#4da3ff" : "#fff",
-            fontWeight: isActive ? "600" : "400",
-            textDecoration: "none"
-          })}
-        >
-          Home
-        </NavLink>
+          <NavLinkItem route="/" title="Home" />
 
-        <NavLink
-          to="/relics"
-          style={({ isActive }) => ({
-            color: isActive ? "#4da3ff" : "#fff",
-            fontWeight: isActive ? "600" : "400",
-            textDecoration: "none"
-          })}
-        >
-          Relics
-        </NavLink>
+          <NavLinkItem route="/relics" title="Relics" />
 
-        <NavLink
-          to="/equipment"
-          style={({ isActive }) => ({
-            color: isActive ? "#4da3ff" : "#fff",
-            fontWeight: isActive ? "600" : "400",
-            textDecoration: "none"
-          })}
-        >
-          Equipment
-        </NavLink>
+          <NavLinkItem route="/equipment" title="Equipment" />
 
-      </nav>
+        </nav>
 
-      {/* Page Switchboard */}
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/relics" element={<Relics relics={relics}/>} />
-        <Route path="/equipment" element={<Equipment />} />
-      </Routes>
-    </Router>
+        <div className="p-4!">
+          {/* Page Switchboard */}
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/relics" element={<Relics relics={relics} />} />
+            <Route path="/equipment" element={<Equipment />} />
+          </Routes>
+        </div>
+      </Router>
+    </div>
   );
 }

@@ -2,28 +2,33 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime};
 use tauri::{AppHandle, Manager};
-use std::collections::HashSet;
 
 #[derive(serde::Deserialize)]
 struct JsDelivrVersion {
     version: String,
 }
 
-// Move your relic filtering logic into its own small helper function
+// MODIFIED: Now filters specifically for items ending in "Intact"
 fn clean_relic_data(full_data: serde_json::Value) -> serde_json::Value {
     if let Some(items_array) = full_data.as_array() {
-        let mut seen_urls = HashSet::new();
         let mut unique_items = Vec::new();
 
         for item in items_array {
-            if let Some(url_name) = item.get("marketInfo").and_then(|m| m.get("urlName")).and_then(|u| u.as_str()) {
-                if seen_urls.insert(url_name.to_string()) {
+            // Check specifically for the "name" field at the root of the relic object
+            // The provided image shows "name": "Axi A1 Intact" directly in the array
+            if let Some(name_val) = item.get("name").and_then(|n| n.as_str()) {
+                
+                // Check if the name ends with "Intact" (case insensitive for safety)
+                if name_val.to_lowercase().ends_with("intact") {
                     unique_items.push(item.clone());
                 }
             } else {
-                unique_items.push(item.clone());
+                // Optional: If an item has no name field at all, we can skip it 
+                // or add the logic here if you want to keep them.
+                // For safety, skipping unknown items is usually best.
             }
         }
+
         serde_json::Value::Array(unique_items)
     } else {
         full_data

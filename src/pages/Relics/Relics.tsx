@@ -1,9 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Relic, RelicReward, EraGroups } from '../../App';
+import { RelicReward, Relic, EraGroups } from '../../types/types';
 
 interface RelicsPageProps {
   relics: EraGroups | undefined;
 }
+
+interface EraAccordionProps {
+  eraName: string;
+  relics: Relic[];
+}
+
 
 export default function Relics(props: RelicsPageProps) {
 
@@ -11,14 +17,15 @@ export default function Relics(props: RelicsPageProps) {
   return (
     <>
       <div className="container">
-        <h1 style={{ color: "#fff", fontSize: "2.25rem" }}>Relics page</h1>
+        <h1 className="text-white text-4xl text-center">Relics page</h1>
       </div>
       <div>
         {
           props.relics ?
             (
-              Object.entries(props.relics).map( ([eraName, relics]) => (
-                <EraAccordiion
+              Object.entries(props.relics).map(([eraName, relics]) => (
+                <EraAccordion
+                  key={eraName}
                   eraName={eraName}
                   relics={relics}
                 />
@@ -33,28 +40,27 @@ export default function Relics(props: RelicsPageProps) {
     </>
   );
 
-  interface EraAccordionProps {
-    eraName: string;
-    relics: Relic[];
-  }
 
-  function EraAccordiion(props: EraAccordionProps) {
+  function EraAccordion(props: EraAccordionProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
       <>
-        <div>
-          <button onClick={() => setIsOpen(!isOpen)}>
-            <span>{props.eraName}</span>
-            <span>{isOpen ? "▼" : "▶"}</span>
+        <div className="p-4! bg-gray-900 border-2 border-gray-700">
+          <button className='text-start text-white w-full' onClick={() => setIsOpen(!isOpen)}>
+            <div className='flex gap-3'>
+              <span>{isOpen ? "▼" : "▶"}</span>
+              <span>{props.eraName}</span>
+            </div>            
           </button>
 
           {
             isOpen && (
               <ul>
                 {
-                  props.relics.map( (relic: Relic) => (
+                  props.relics.map((relic: Relic) => (
                     <RelicAccordion
+                      key={relic.id}
                       relic={relic}
                     />
                   ))
@@ -68,31 +74,60 @@ export default function Relics(props: RelicsPageProps) {
   }
 
 
-  interface RelicAccordionProps{
+  interface RelicAccordionProps {
     relic: Relic
   }
 
-  function RelicAccordion (props: RelicAccordionProps){
+  function RelicAccordion(props: RelicAccordionProps) {
 
     const [isOpen, setIsOpen] = useState(false);
 
+    function getRarityClass(rarity: string){
+      switch(rarity.toLocaleLowerCase()){
+        case "common": return "text-yellow-700";
+        case "rare": return "text-amber-400";
+        case "uncommon":  return "text-gray-400";
+      }
+    }
+
+
     return (
       <>
-        <div>
-          <button onClick={() => setIsOpen(!isOpen)}>
-            <span>{props.relic.name}</span>
-            <span>{isOpen ? "▼" : "▶"}</span>
+        <div className='pl-8! p-2!'>
+          <button className='w-full text-white text-start' onClick={() => {
+            setIsOpen(!isOpen);
+            console.log(props.relic);
+          }}>
+            <div className='flex gap-3'>
+              <span>{isOpen ? "▼" : "▶"}</span>
+              <span>{props.relic.name}</span>
+            </div>
           </button>
 
           {
             isOpen && (
               <ul>
                 {
-                  props.relic.rewards.map( (reward: RelicReward) => (
-                    <li>
-                      <span>{reward.name}</span>
-                      <span>{reward.rarity}</span>
-                    </li>
+                  props.relic.rewards.map((reward: RelicReward) => (
+
+                    <div className='pl-5!' key={reward.id}>
+                      <li className='flex gap-10 justify-start'>
+                        <div className='w-100 text-white'>
+                          <span>{reward.name}</span>
+                        </div>
+                        <div className='w-30'>
+                          <span className={getRarityClass(reward.rarity)}>
+                            {reward.rarity}
+                          </span>
+                        </div>
+                        <div className='w-15 text-gray-400'>
+                          <span>{reward.plat}p</span>
+                        </div>
+                        <div className='text-yellow-400'>
+                          <span>{reward.ducats}d</span>
+                        </div>
+                      </li>
+                    </div>
                   ))
                 }
               </ul>
