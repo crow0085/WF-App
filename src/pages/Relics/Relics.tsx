@@ -24,7 +24,6 @@ function getPlatValue(reward: RelicReward, useAveragePlat: boolean): Promise<num
 
   const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
 
-  // Return the promise chain!
   return invoke("get_plat_value", { url: marketUrl })
     .then((data: any) => {
       const avg = data.data.sell.map((item: any) => item.platinum).reduce((total: number, cur: number) => total + cur, 0) / data.data.sell.length;
@@ -72,7 +71,6 @@ export default function Relics(props: RelicsPageProps) {
           props.relics ?
             (
               Object.entries(props.relics).map(([eraName, relics]) => {
-                // 💡 Filter the individual era's relics array before passing it to the accordion
                 const displayedRelics = props.hideVaulted
                   ? relics.filter((relic: Relic) => !relic.vaulted)
                   : relics;
@@ -81,7 +79,7 @@ export default function Relics(props: RelicsPageProps) {
                   <EraAccordion
                     key={eraName}
                     eraName={eraName}
-                    relics={displayedRelics} // Passes the filtered array cleanly!
+                    relics={displayedRelics}
                     useAveragePlat={props.useAveragePlat}
                   />
                 );
@@ -185,7 +183,7 @@ export default function Relics(props: RelicsPageProps) {
                 } catch (err) {
                   console.error("Failed to update plat values in state:", err);
                 } finally {
-                  setIsPriceLoading(false); // Turn loader off                  
+                  setIsPriceLoading(false);               
                 }
               }
             }}>

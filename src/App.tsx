@@ -117,7 +117,7 @@ export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
   Object.entries(masterJsonPayload).forEach(([categoryName, itemsArray]) => {
     if (Array.isArray(itemsArray)) {
       itemsArray.forEach((item: any) => {
-        // Map the item name directly to its ducat value if it has one
+        
         if (item.isPrime && item.components) {
           primeLookup[item.name] = item.components;
         }
@@ -159,23 +159,19 @@ export default function App() {
 
 
   useEffect(() => {
-    // 1. Download/Verify caches for all files simultaneously
     Promise.all(
       categories.map((cat: string) =>
         invoke('get_warframe_items', { category: cat, forceFetch: false })
           .then((statusMsg: any) => {
-            console.log(statusMsg); // e.g., "Cache fresh for category: Relics"
+            console.log(statusMsg); 
           })
       )
     )
       .then(() => {
         console.log("All individual categories ready on disk. Retrieving aggregated master JSON...");
-        // 2. Run the merge command to check master.json age and give us the full master payload
         return invoke('merge_json_files');
       })
       .then((masterJsonPayload: any) => {
-        //console.log("Master JSON loaded successfully:", masterJsonPayload);      
-        // 3. Pull your cleaned data directly out of the master payload for UI mapping
         if (masterJsonPayload.Relics) {
           const mappedRelics = masterJsonPayload.Relics.map(mapRawToRelic);
           const mappedDucats = setRelicDucats(mappedRelics, masterJsonPayload)
@@ -197,7 +193,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gray-800">
       <Router>
-        {/* Simple navigation bar */}
         <nav className="flex gap-4 border-2 border-gray-700 ">
 
           <NavLinkItem route="/" title="Home" />
@@ -209,7 +204,6 @@ export default function App() {
         </nav>
 
         <div className="p-4!">
-          {/* Page Switchboard */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/relics" element={
