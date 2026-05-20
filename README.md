@@ -11,6 +11,9 @@ an app i am working on since theres not really any good companion apps for warfr
 
 ## Some images of the app
  ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%204.png) 
+ ##
  ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%201.png) 
+ ##
  ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%202.png) 
+ ##
  ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%203.png) 
