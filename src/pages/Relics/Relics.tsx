@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { RelicReward, Relic, EraGroups } from '../../types/types';
+import { invoke } from '@tauri-apps/api/core';
 
 interface RelicsPageProps {
   relics: EraGroups | undefined;
@@ -10,9 +11,28 @@ interface EraAccordionProps {
   relics: Relic[];
 }
 
+function getPlatValue(reward: RelicReward): Promise<number> {
+  const slug = reward.urlName;
+  console.log(reward.urlName);
+
+  if (!slug) return Promise.resolve(0);
+
+  const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
+
+  // Return the promise chain!
+  return invoke("get_plat_value", { url: marketUrl })
+    .then((data: any) => {
+      const plat = data.data.sell[0].platinum;
+      return plat;
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      return 0;
+    });
+}
+
 
 export default function Relics(props: RelicsPageProps) {
-
 
   return (
     <>
@@ -51,7 +71,7 @@ export default function Relics(props: RelicsPageProps) {
             <div className='flex gap-3'>
               <span>{isOpen ? "▼" : "▶"}</span>
               <span>{props.eraName}</span>
-            </div>            
+            </div>
           </button>
 
           {
@@ -81,26 +101,59 @@ export default function Relics(props: RelicsPageProps) {
   function RelicAccordion(props: RelicAccordionProps) {
 
     const [isOpen, setIsOpen] = useState(false);
+    const [relic, setRelic] = useState<Relic>()
+    const [isPriceLoading, setIsPriceLoading] = useState(false);
+    const [platFetched, setplatFetched] = useState(false);
 
-    function getRarityClass(rarity: string){
-      switch(rarity.toLocaleLowerCase()){
+    useEffect(() => {
+      setRelic(props.relic)
+    }, []);
+
+    function getRarityClass(rarity: string) {
+      switch (rarity.toLocaleLowerCase()) {
         case "common": return "text-yellow-700";
         case "rare": return "text-amber-400";
-        case "uncommon":  return "text-gray-400";
+        case "uncommon": return "text-gray-400";
       }
     }
-
 
     return (
       <>
         <div className='pl-8! p-2!'>
-          <button className='w-full text-white text-start' onClick={() => {
-            setIsOpen(!isOpen);
-            console.log(props.relic);
-          }}>
+          <button
+            className='w-full text-white text-start'
+            onClick={async () => {
+
+              const nextOpenState = !isOpen;
+              setIsOpen(nextOpenState);
+
+              if (nextOpenState && relic && !platFetched) {
+                try {
+                  setIsPriceLoading(true);
+                  const platPromises = relic.rewards.map(getPlatValue);
+                  const platValues = await Promise.all(platPromises);
+
+                  const updatedRewards = relic.rewards.map((reward, index) => ({
+                    ...reward,
+                    plat: platValues[index]
+                  }));
+
+                  setRelic({
+                    ...relic,
+                    rewards: updatedRewards
+                  });
+                  setplatFetched(true);
+
+                } catch (err) {
+                  console.error("Failed to update plat values in state:", err);
+                } finally {
+                  setIsPriceLoading(false); // Turn loader off                  
+                }
+              }
+            }}>
             <div className='flex gap-3'>
               <span>{isOpen ? "▼" : "▶"}</span>
-              <span>{props.relic.name}</span>
+              <span>{relic?.name}</span>
             </div>
           </button>
 
@@ -108,7 +161,7 @@ export default function Relics(props: RelicsPageProps) {
             isOpen && (
               <ul>
                 {
-                  props.relic.rewards.map((reward: RelicReward) => (
+                  relic?.rewards.map((reward: RelicReward) => (
 
                     <div className='pl-5!' key={reward.id}>
                       <li className='flex gap-10 justify-start'>
@@ -121,7 +174,7 @@ export default function Relics(props: RelicsPageProps) {
                           </span>
                         </div>
                         <div className='w-15 text-gray-400'>
-                          <span>{reward.plat}p</span>
+                          <span>{isPriceLoading ? "..." : `${reward.plat}p`}</span>
                         </div>
                         <div className='text-yellow-400'>
                           <span>{reward.ducats}d</span>

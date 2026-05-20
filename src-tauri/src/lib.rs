@@ -51,8 +51,31 @@ fn process_category_data(category: &str, raw_json_str: &str) -> Result<serde_jso
 }
 
 #[tauri::command]
+async fn get_plat_value(
+    client: tauri::State<'_, reqwest::Client>,
+    url: String
+    
+) -> Result<serde_json::Value, String> {
+
+    // 2. Make the asynchronous GET request
+    let response = client.get(&url)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    // 3. Parse the body directly into a generic JSON Value
+    let json: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    Ok(json)
+}
+
+#[tauri::command]
 async fn get_warframe_items(
     app: AppHandle, 
+    client: tauri::State<'_, reqwest::Client>,
     category: String, 
     force_fetch: Option<bool> // optional arg to re fetch the data before its been 24h
 ) -> Result<serde_json::Value, String> {
@@ -90,12 +113,6 @@ async fn get_warframe_items(
         let processed_cache = process_category_data(&category, &cache_content)?;
         return Ok(processed_cache);
     }
-
-    // 4. Fetch live data if the cache is missing or expired
-    let client = reqwest::Client::builder()
-        .user_agent("WF-APP (GitHub: crow0085)")
-        .build()
-        .map_err(|e| format!("Failed to build HTTP client: {}", e))?;
 
     // Fetch the real-time version from jsDelivr metadata registry
     let version_url = "https://data.jsdelivr.com/v1/packages/npm/@wfcd/items/resolved";
@@ -153,10 +170,15 @@ pub fn run() {
     #[cfg(target_os = "linux")]
     std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
     
+    let client = reqwest::Client::builder()
+        .user_agent("WF-APP (GitHub: crow0085)")
+        .build()
+        .expect("Failed to build global HTTP client");
 
     tauri::Builder::default()
+        .manage(client)
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_warframe_items])
+        .invoke_handler(tauri::generate_handler![get_warframe_items, get_plat_value])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

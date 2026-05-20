@@ -1,10 +1,11 @@
-export interface RelicReward { // this is for the item offered from the relic
+export interface RelicReward { // this is for the item offered from the relic  
   rarity: string;
   chance: number;
   name: string;
   ducats: number;
   plat: number;
   id: string;
+  urlName: string
 }
 
 export interface Relic { // this is for the relic itself

@@ -11,7 +11,7 @@ import { nanoid } from 'nanoid';
 import { RelicReward, Relic, EraGroups } from "./types/types";
 
 export function getRewardRarity(reward: any) {
-  switch (reward.chance){
+  switch (reward.chance) {
     case 25.33: return "Common"
     case 11: return "Uncommon"
     case 2: return "Rare"
@@ -33,9 +33,9 @@ export function mapRawToRelic(rawRelic: any) {
     name: reward.item.name,
     ducats: 0,
     plat: 0,
-    id: nanoid()
-  })).sort( (a: RelicReward,b: RelicReward) => a.chance > b.chance);
-
+    id: nanoid(),
+    urlName: reward.item.warframeMarket?.urlName
+  })).sort((a: RelicReward, b: RelicReward) => a.chance - b.chance);
 
   return {
     name,
@@ -92,24 +92,50 @@ function NavLinkItem(props: any) {
   );
 }
 
+const categories = [
+  'Arcanes',
+  'Archwing',
+  'Arch-Gun',
+  'Arch-Melee',
+  'Melee',
+  'Mods',
+  'Pets',
+  'Primary',
+  'Relics',
+  'Secondary',
+  'Sentinels',
+  'SentinelWeapons',
+  'Warframes'
+];
+
 export default function App() {
 
   const [relics, setRelics] = useState<EraGroups>();
 
+
   useEffect(() => {
-    invoke('get_warframe_items', { category: 'Relics', forceFetch: false })
-      .then((data: any) => {
-        const mappedRelics = data.map(mapRawToRelic)
-        const mappedByEra = mapRelicsToEra(mappedRelics);
-        setRelics(mappedByEra);
-      })
+    Promise.all(categories.map((cat: string) =>
+      invoke('get_warframe_items', { category: cat, forceFetch: false })
+        .then((data: any) => ({
+          category: cat,
+          data
+        }))
+        .then((res: any) => {
+          switch (res.category) {
+            case "Relics":
+              const mappedRelics = res.data.map(mapRawToRelic)
+              //getPlatValue(mappedRelics[0].rewards[0]);
+              const mappedByEra = mapRelicsToEra(mappedRelics);
+              setRelics(mappedByEra);
+              break;
+          }
+        })
+    ))
       .catch((error) => {
         // If Rust hits a map_err and returns an Err(String), it ends up here
         console.error("Rust Backend Error:", error);
       });
   }, []);
-
-
 
   return (
     <div className="min-h-screen bg-gray-800">
