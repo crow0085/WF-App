@@ -111,6 +111,9 @@ const categories = [
 export default function App() {
 
   const [relics, setRelics] = useState<EraGroups>();
+  const [useAveragePlat, setUseAveragePlat] = useState(false);
+  const [hideVaulted, setHideVaulted] = useState(false);
+
 
 
   useEffect(() => {
@@ -155,7 +158,15 @@ export default function App() {
           {/* Page Switchboard */}
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/relics" element={<Relics relics={relics} />} />
+            <Route path="/relics" element={
+              <Relics
+                relics={relics}
+                useAveragePlat={useAveragePlat}
+                setUseAveragePlat={setUseAveragePlat}
+                hideVaulted={hideVaulted}
+                setHideVaulted={setHideVaulted}
+              />}
+            />
             <Route path="/equipment" element={<Equipment />} />
           </Routes>
         </div>

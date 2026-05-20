@@ -4,14 +4,19 @@ import { invoke } from '@tauri-apps/api/core';
 
 interface RelicsPageProps {
   relics: EraGroups | undefined;
+  useAveragePlat: boolean;
+  setUseAveragePlat: React.Dispatch<React.SetStateAction<boolean>>;
+  hideVaulted: boolean;
+  setHideVaulted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface EraAccordionProps {
   eraName: string;
   relics: Relic[];
+  useAveragePlat: boolean;
 }
 
-function getPlatValue(reward: RelicReward): Promise<number> {
+function getPlatValue(reward: RelicReward, useAveragePlat: boolean): Promise<number> {
   const slug = reward.urlName;
   console.log(reward.urlName);
 
@@ -22,8 +27,13 @@ function getPlatValue(reward: RelicReward): Promise<number> {
   // Return the promise chain!
   return invoke("get_plat_value", { url: marketUrl })
     .then((data: any) => {
-      const plat = data.data.sell[0].platinum;
-      return plat;
+      const avg = data.data.sell.map((item: any) => item.platinum ).reduce( (total: number, cur: number) => total + cur, 0) / data.data.sell.length;
+      console.log(`Average platinum: ${avg}`)
+      const lowest = data.data.sell[0].platinum;
+      console.log(`Lowest platinum: ${lowest}`)
+      console.log(useAveragePlat)
+      const plat = useAveragePlat ?  avg : lowest
+      return plat
     })
     .catch((error) => {
       console.error("Error:", error);
@@ -38,25 +48,51 @@ export default function Relics(props: RelicsPageProps) {
     <>
       <div className="container">
         <h1 className="text-white text-4xl text-center">Relics page</h1>
+        <div className='flex gap-3'>
+          <label className="text-white flex items-center gap-2 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked={props.useAveragePlat} 
+              onChange={(e) => props.setUseAveragePlat(e.target.checked)} 
+            />
+            Use Average Plat Prices
+          </label>
+          <label className="text-white flex items-center gap-2 cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked={props.hideVaulted} 
+              onChange={(e) => props.setHideVaulted(e.target.checked)} 
+            />
+            Hide vaulted
+          </label>
+        </div>
       </div>
       <div>
-        {
-          props.relics ?
-            (
-              Object.entries(props.relics).map(([eraName, relics]) => (
-                <EraAccordion
-                  key={eraName}
-                  eraName={eraName}
-                  relics={relics}
-                />
-              ))
-            )
-            :
-            (
-              <h1>Currently loading relic data</h1>
-            )
-        }
-      </div>
+  {
+    props.relics ?
+      (
+        Object.entries(props.relics).map(([eraName, relics]) => {
+          // 💡 Filter the individual era's relics array before passing it to the accordion
+          const displayedRelics = props.hideVaulted 
+            ? relics.filter( (relic: Relic) => !relic.vaulted)
+            : relics;
+
+          return (
+            <EraAccordion
+              key={eraName}
+              eraName={eraName}
+              relics={displayedRelics} // Passes the filtered array cleanly!
+              useAveragePlat={props.useAveragePlat}
+            />
+          );
+        })
+      )
+      :
+      (
+        <h1 className="text-white text-center">Currently loading relic data</h1>
+      )
+  }
+</div>
     </>
   );
 
@@ -82,6 +118,7 @@ export default function Relics(props: RelicsPageProps) {
                     <RelicAccordion
                       key={relic.id}
                       relic={relic}
+                      useAveragePlat={props.useAveragePlat}
                     />
                   ))
                 }
@@ -96,6 +133,7 @@ export default function Relics(props: RelicsPageProps) {
 
   interface RelicAccordionProps {
     relic: Relic
+    useAveragePlat: boolean
   }
 
   function RelicAccordion(props: RelicAccordionProps) {
@@ -130,7 +168,7 @@ export default function Relics(props: RelicsPageProps) {
               if (nextOpenState && relic && !platFetched) {
                 try {
                   setIsPriceLoading(true);
-                  const platPromises = relic.rewards.map(getPlatValue);
+                  const platPromises = relic.rewards.map( r => getPlatValue(r, props.useAveragePlat) );
                   const platValues = await Promise.all(platPromises);
 
                   const updatedRewards = relic.rewards.map((reward, index) => ({
