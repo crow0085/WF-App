@@ -2,10 +2,86 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime};
 use tauri::{AppHandle, Manager};
+use serde_json::{Value, Map};
 
 #[derive(serde::Deserialize)]
 struct JsDelivrVersion {
     version: String,
+}
+
+#[tauri::command]
+async fn merge_json_files(app: AppHandle) -> Result<serde_json::Value, String> {
+    // 1. Establish path to the cache directory
+    let cache_dir: PathBuf = app.path().app_cache_dir().map_err(|e| e.to_string())?;
+    let output_path = cache_dir.join("master.json");
+
+    // 2. Check if master.json exists and evaluate its age (under 24 hours)
+    let mut use_cached_master = false;
+    let a_day_in_seconds = 24 * 60 * 60;
+
+    if output_path.exists() {
+        if let Ok(metadata) = fs::metadata(&output_path) {
+            if let Ok(modified) = metadata.modified() {
+                if let Ok(duration) = SystemTime::now().duration_since(modified) {
+                    if duration.as_secs() < a_day_in_seconds {
+                        use_cached_master = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Return the cached master data immediately if it's fresh
+    if use_cached_master {
+        println!("Master JSON cache found and fresh! Returning cached file.");
+        let cached_content = fs::read_to_string(&output_path).map_err(|e| e.to_string())?;
+        let master_json: Value = serde_json::from_str(&cached_content)
+            .map_err(|e| format!("Failed to parse existing master.json: {}", e))?;
+        return Ok(master_json);
+    }
+
+    // 4. Stale or non-existent: Gather and merge individual JSON files
+    println!("Master JSON is stale or missing. Rebuilding master map...");
+    let mut master_obj = Map::new();
+    let entries = fs::read_dir(&cache_dir)
+        .map_err(|e| format!("Failed to read cache directory {}: {}", cache_dir.display(), e))?;
+
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Directory entry error: {}", e))?;
+        let path = entry.path();
+
+        // Only process files ending in `.json`
+        if path.is_file() && path.extension().map_or(false, |ext| ext == "json") {
+            if let Some(file_name) = path.file_stem().and_then(|s| s.to_str()) {
+                // Ignore the current master.json during the merge loop
+                if file_name == "master" {
+                    continue; 
+                }
+
+                let content = fs::read_to_string(&path)
+                    .map_err(|e| format!("Failed to read {}.json: {}", file_name, e))?;
+                
+                let json_value: Value = serde_json::from_str(&content)
+                    .map_err(|e| format!("Malformed JSON in {}.json: {}", file_name, e))?;
+
+                master_obj.insert(file_name.to_string(), json_value);
+            }
+        }
+    }
+
+    let master_value = Value::Object(master_obj);
+
+    // 5. Serialize and cache the newly merged data to disk
+    let pretty_json = serde_json::to_string_pretty(&master_value)
+        .map_err(|e| format!("Failed to serialize master JSON: {}", e))?;
+        
+    fs::write(&output_path, pretty_json)
+        .map_err(|e| format!("Failed to write master.json to disk: {}", e))?;
+    
+    println!("Wrote new master.json data to disk!");
+
+    // 6. Return the fresh master object to the frontend state
+    Ok(master_value)
 }
 
 // MODIFIED: Now filters specifically for items ending in "Intact"
@@ -74,30 +150,25 @@ async fn get_plat_value(
 
 #[tauri::command]
 async fn get_warframe_items(
-    app: AppHandle, 
+    app: tauri::AppHandle, 
     client: tauri::State<'_, reqwest::Client>,
     category: String, 
-    force_fetch: Option<bool> // optional arg to re fetch the data before its been 24h
-) -> Result<serde_json::Value, String> {
-    // 1. Establish path to the OS App Cache directory (e.g., AppData/Local/cache on Windows)
-    let cache_dir: PathBuf = app.path().app_cache_dir().map_err(|e| e.to_string())?;
-    
-    // Ensure the folder structure exists physically on the drive
+    force_fetch: Option<bool>
+) -> Result<String, String> {
+    // 1. Establish path to the OS App Cache directory
+    let cache_dir: std::path::PathBuf = app.path().app_cache_dir().map_err(|e| e.to_string())?;
     fs::create_dir_all(&cache_dir).map_err(|e| e.to_string())?;
-    
     let file_path = cache_dir.join(format!("{}.json", category));
 
     // 2. Check if the file exists and evaluate its age
     let mut use_cache = false;
     let a_day_in_seconds = 24 * 60 * 60;
-
     let should_force = force_fetch.unwrap_or(false);
 
     if !should_force && file_path.exists() {
         if let Ok(metadata) = fs::metadata(&file_path) {
             if let Ok(modified) = metadata.modified() {
-                if let Ok(duration) = SystemTime::now().duration_since(modified) {
-                    // Check if the local file is under 24 hours old (86,400 seconds)
+                if let Ok(duration) = std::time::SystemTime::now().duration_since(modified) {
                     if duration.as_secs() < a_day_in_seconds {
                         use_cache = true;
                     }
@@ -106,33 +177,26 @@ async fn get_warframe_items(
         }
     }
 
-    // 3. Return the cached data if it is valid
+    // 3. If cache is fresh, do nothing and return status
     if use_cache {
-        let cache_content = fs::read_to_string(&file_path).map_err(|e| e.to_string())?;
-        println!("Cached data found and fresh!");
-        let processed_cache = process_category_data(&category, &cache_content)?;
-        return Ok(processed_cache);
+        println!("Cached data for {} found and fresh!", category);
+        return Ok(format!("Cache fresh for category: {}", category));
     }
 
-    // Fetch the real-time version from jsDelivr metadata registry
+    // 4. Cache is stale/missing: Fetch real-time version from jsDelivr registry
     let version_url = "https://data.jsdelivr.com/v1/packages/npm/@wfcd/items/resolved";
-    
     let response = client
         .get(version_url)
         .send()
         .await
         .map_err(|e| format!("Network request failed: {}", e))?;
 
-    // Extract and parse the JSON payload into our struct
     let version_data = response
-        .json::<JsDelivrVersion>()
+        .json::<JsDelivrVersion>() // Ensure your JsDelivrVersion struct is in scope
         .await
         .map_err(|e| format!("Failed to parse version JSON: {}", e))?;
 
-    // Now you can access the string cleanly!
-    let active_version: String = version_data.version;
-
-    // Build the path using the dynamically retrieved version string
+    let active_version = version_data.version;
     let data_url = format!(
         "https://cdn.jsdelivr.net/npm/@wfcd/items@{}/data/json/{}.json",
         active_version, category
@@ -150,17 +214,20 @@ async fn get_warframe_items(
         .await
         .map_err(|e| format!("Failed to read network response text: {}", e))?;
 
-
-    // Parse, process, and filter it out for React all in one go
+    // 5. CRITICAL CHANGE: Parse and CLEAN the data BEFORE saving it to disk
     let processed_data = process_category_data(&category, &fresh_json)?;
     
-    //Cache the parsed data to disk immediately
-    fs::write(&file_path, &fresh_json)
+    // Serialize the CLEANED data back to a string format to write to disk
+    let cleaned_json_str = serde_json::to_string_pretty(&processed_data)
+        .map_err(|e| format!("Failed to serialize cleaned JSON: {}", e))?;
+
+    // Cache the CLEANED data to disk immediately
+    fs::write(&file_path, cleaned_json_str)
         .map_err(|e| format!("Failed to save data cache to disk: {}", e))?;
-    println!("Wrote {:?} data to file! {:?}", category, file_path);    
+        
+    println!("Wrote CLEANED {:?} data to file! {:?}", category, file_path);    
     
-    // 3. Return the filtered dataset
-    Ok(processed_data)
+    Ok(format!("Successfully downloaded and cleaned category: {}", category))
 }
 
 
@@ -178,7 +245,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(client)
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_warframe_items, get_plat_value])
+        .invoke_handler(tauri::generate_handler![get_warframe_items, get_plat_value, merge_json_files])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 

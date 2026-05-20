@@ -212,11 +212,13 @@ export default function Relics(props: RelicsPageProps) {
                             {reward.rarity}
                           </span>
                         </div>
-                        <div className='w-15 text-gray-400'>
-                          <span>{isPriceLoading ? "..." : `${reward.plat}p`}</span>
+                        <div className='flex items-center text-gray-300'>
+                          <span className='w-10 text-right tabular-nums'>{isPriceLoading ? "..." : `${reward.plat}p`}</span>
+                          <img className='h-5' src="src/images/Platinum.png" alt="Logo" />
                         </div>
-                        <div className='text-yellow-400'>
-                          <span>{reward.ducats}d</span>
+                        <div className='flex items-center text-yellow-400'>
+                          <span className='w-10 text-right tabular-nums'>{reward.ducats}d</span>
+                          <img className='h-7' src="src/images/OrokinDucats.png" alt="Logo" />
                         </div>
                       </li>
                     </div>

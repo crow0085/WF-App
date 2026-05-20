@@ -108,37 +108,91 @@ const categories = [
   'Warframes'
 ];
 
+export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
+
+  // first 2 words are the item name, third word is the part
+
+  const primeLookup: Record<string, any[]> = {};
+
+  Object.entries(masterJsonPayload).forEach(([categoryName, itemsArray]) => {
+    if (Array.isArray(itemsArray)) {
+      itemsArray.forEach((item: any) => {
+        // Map the item name directly to its ducat value if it has one
+        if (item.isPrime && item.components) {
+          primeLookup[item.name] = item.components;
+        }
+      });
+    }
+  });
+
+  const mappedDucats = relics.map((relic: Relic) => {
+   const updatedRwards = relic.rewards.map((reward: RelicReward) => {
+      const itemNameSplit = reward.name.split(" ")
+      if (itemNameSplit.length > 1) {
+        const name = itemNameSplit[0] + " " + itemNameSplit[1];
+        const partName = itemNameSplit[2];
+        
+        const parts = primeLookup[name];
+
+        if (parts){
+          const part = parts.find((part: any) => part.name === partName)
+          if (part && part.primeSellingPrice){
+            return { ...reward, ducats: part.primeSellingPrice };
+          }
+        }
+      }
+      return reward;
+    })
+    return {...relic, rewards: updatedRwards};
+  })
+
+  return mappedDucats;
+}
+
 export default function App() {
 
   const [relics, setRelics] = useState<EraGroups>();
   const [useAveragePlat, setUseAveragePlat] = useState(false);
   const [hideVaulted, setHideVaulted] = useState(false);
+  const [allItems, setAllItems] = useState();
 
 
 
   useEffect(() => {
-    Promise.all(categories.map((cat: string) =>
-      invoke('get_warframe_items', { category: cat, forceFetch: false })
-        .then((data: any) => ({
-          category: cat,
-          data
-        }))
-        .then((res: any) => {
-          switch (res.category) {
-            case "Relics":
-              const mappedRelics = res.data.map(mapRawToRelic)
-              //getPlatValue(mappedRelics[0].rewards[0]);
-              const mappedByEra = mapRelicsToEra(mappedRelics);
-              setRelics(mappedByEra);
-              break;
-          }
-        })
-    ))
+    // 1. Download/Verify caches for all files simultaneously
+    Promise.all(
+      categories.map((cat: string) =>
+        invoke('get_warframe_items', { category: cat, forceFetch: false })
+          .then((statusMsg: any) => {
+            console.log(statusMsg); // e.g., "Cache fresh for category: Relics"
+          })
+      )
+    )
+      .then(() => {
+        console.log("All individual categories ready on disk. Retrieving aggregated master JSON...");
+        // 2. Run the merge command to check master.json age and give us the full master payload
+        return invoke('merge_json_files');
+      })
+      .then((masterJsonPayload: any) => {
+        //console.log("Master JSON loaded successfully:", masterJsonPayload);      
+        // 3. Pull your cleaned data directly out of the master payload for UI mapping
+        if (masterJsonPayload.Relics) {
+          const mappedRelics = masterJsonPayload.Relics.map(mapRawToRelic);
+          const mappedDucats = setRelicDucats(mappedRelics, masterJsonPayload)
+          const mappedByEra = mapRelicsToEra(mappedDucats);
+          setRelics(mappedByEra);
+        }
+        setAllItems(masterJsonPayload)
+      })
       .catch((error) => {
-        // If Rust hits a map_err and returns an Err(String), it ends up here
-        console.error("Rust Backend Error:", error);
-      });
+        console.error("Operation failed:", error);
+      })
+
   }, []);
+
+  useEffect(() => {
+    console.log(allItems)
+  }, [allItems]);
 
   return (
     <div className="min-h-screen bg-gray-800">
