@@ -18,4 +18,4 @@ an app i am working on since theres not really any good companion apps for warfr
  ##
  ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%203.png) 
  ##
- ![Screenshot of the prime set page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%204.png) 
+ ![Screenshot of the prime set page](https://github.com/crow0085/WF-App/blob/main/github-images/prime%20set%20eg.png) 
