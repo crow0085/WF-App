@@ -119,25 +119,27 @@ export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
       itemsArray.forEach((item: any) => {
         
         if (item.isPrime && item.components) {
-          primeLookup[item.name] = item.components;
+          primeLookup[item.name.toLowerCase()] = item.components;
         }
       });
     }
   });
 
   const mappedDucats = relics.map((relic: Relic) => {
-   const updatedRwards = relic.rewards.map((reward: RelicReward) => {
-      const itemNameSplit = reward.name.split(" ")
+   const updatedRwards = relic.rewards.map((reward: RelicReward) => {    
+      const itemNameSplit = reward.name.split(" ");
+      const [first, second, ...leftover] = itemNameSplit;
       if (itemNameSplit.length > 1) {
-        const name = itemNameSplit[0] + " " + itemNameSplit[1];
-        const partName = itemNameSplit[2];
-        
+        const name: string = [first, second].join(" ").toLowerCase(); // this will be the name of the item set eg Frost Prime
+        let partName = leftover.join(" ").toLowerCase(); // this will contain the rest of the reward part, such as blueprint, chassis blueprint etc        
         const parts = primeLookup[name];
-
+        if (leftover.length > 1 && partName.toLocaleLowerCase().includes("blueprint"))
+          partName = partName.replace("blueprint", "");
+          console.log(partName)
         if (parts){
-          const part = parts.find((part: any) => part.name === partName)
+          const part = parts.find((part: any) => partName.includes(part.name.toLowerCase()))
           if (part && part.primeSellingPrice){
-            return { ...reward, ducats: part.primeSellingPrice };
+            return { ...reward, ducats: part.ducats};
           }
         }
       }
@@ -146,6 +148,7 @@ export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
     return {...relic, rewards: updatedRwards};
   })
 
+  console.log(primeLookup)
   return mappedDucats;
 }
 
