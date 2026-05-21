@@ -1,8 +1,49 @@
 import { useState, useEffect } from 'react';
 import {EquipmentCategoryAccordionProps, EquipmentSet, EquipmentSetAccordionProps, SetComponent, EquipmentProps } from '../../types/types';
+import { fetch } from '@tauri-apps/plugin-http';
 
+// doing this on the js side instead of react because im lazy
+async function getItemSlugs(primeSet: EquipmentSet){
+  // https://api.warframe.market/v2/item/{slug}/set
+  const setSlug = primeSet.name.replace(/[" "]/g, "_").replace(/[&]/g, "and").concat("_set").toLowerCase();
+  const url = `https://api.warframe.market/v2/item/${setSlug}/set`
+  
+  const res = await fetch(url).then(res => res.json()).then(data => {return data})
+  const items = res.data.items.slice(1) // removing the first element since its just the slug of the set itself.  
 
+  const slugs = Object.entries(items).map(([id, item]: any) =>{
+    return item.slug
+  })
 
+  return slugs
+}
+
+async function getPlatValues(primeSet: EquipmentSet){
+  const slugs:string[] = await getItemSlugs(primeSet);
+  const setName = primeSet.name
+
+  const platMap: Record<string, number> = {};
+
+  for (const component of primeSet.components){
+    const potentialSlug = setName.concat(" ").concat(component.name).replace(/[" "]/g, "_").toLowerCase()
+    const slug = slugs.filter( s => s.includes(potentialSlug))[0]
+    if (slug){
+      const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
+      const res = await fetch(marketUrl).then(res => res.json()).then(data => {return data})
+      const plat = res.data.sell[0].platinum
+      platMap[component.name] = plat
+    }
+  }
+
+  const mapped = primeSet.components.map((component: SetComponent) => {
+    return {
+      ...component,
+      plat: platMap[component.name]
+    }
+  })
+
+  return mapped
+}
 
 export default function Equipment(props: EquipmentProps) {
 
@@ -42,7 +83,7 @@ export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
 
   useEffect(() => {
     setSet(props.set)
-  }, []);
+  }, [props]);
 
   return (
     <div className='pl-8! p-2!'>
@@ -51,7 +92,15 @@ export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
         onClick={async () => {
           const nextOpenState = !isOpen;
           setIsOpen(nextOpenState);
-          if (nextOpenState) console.log(props.set.components)
+          if (nextOpenState && set && !platFetched){
+            const platMapped = await getPlatValues(set)
+            setSet({
+              ...set,
+              components: platMapped
+            })
+            setIsPriceLoading(false)
+            setplatFetched(true)
+          }
         }}>
         <div className={`flex gap-3 ${set?.vaulted ? "text-red-800" : "text-white"}`}>
           <span>{isOpen ? "▼" : "▶"}</span>
