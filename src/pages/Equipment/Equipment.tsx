@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
-import { invoke } from '@tauri-apps/api/core';
-import { categories } from '../../types/types';
+import {EquipmentCategoryAccordionProps, EquipmentSet, EquipmentSetAccordionProps, SetComponent, EquipmentProps } from '../../types/types';
 
 
-interface EquipmentProps {
-  Equipment: Record<string, any[]> | undefined
-}
+
 
 export default function Equipment(props: EquipmentProps) {
 
@@ -26,39 +23,15 @@ export default function Equipment(props: EquipmentProps) {
       {props.Equipment && (
         Object.entries(props.Equipment).map(([category, sets]) => {
           return (
-            <EquipmentCategoryAccordion key={category} category={category} sets={sets} />
+            sets.length > 0 &&(
+              <EquipmentCategoryAccordion key={category} category={category} sets={sets} />
+            )
           )
         })
       )}
 
     </>
   );
-}
-
-export interface EquipmentCategoryAccordionProps {
-  category: string;
-  sets: EquipmentSet[];
-}
-
-export interface EquipmentSet {
-  name: string;
-  isPrime: boolean;
-  components: SetComponent[];
-  vaulted: boolean;
-}
-
-export interface SetComponent {
-  itemCount: number;
-  name: string;
-  ducats: number;
-  plat: number;
-  tradable: boolean;
-  uniqueName: string
-  type: string
-}
-
-export interface EquipmentSetAccordionProps {
-  set: EquipmentSet
 }
 
 export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
@@ -96,10 +69,10 @@ export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
                   <li className='flex gap-10 justify-start'>
                     <div className='flex gap-2 w-100 text-white'>
                       <span>x{component.itemCount}</span>
-                      <span>{component.name}</span>                      
+                      <span>{component.name}</span>
                     </div>
                     <div className='flex items-center text-gray-300'>
-                      <span className='w-10 text-right tabular-nums'>{isPriceLoading ? "..." : `${component.plat? component.plat + "p" : "..."}`}</span>
+                      <span className='w-10 text-right tabular-nums'>{isPriceLoading ? "..." : `${component.plat ? component.plat + "p" : "..."}`}</span>
                       <img className='h-5' src="src/images/Platinum.png" alt="Logo" />
                     </div>
                     <div className='flex items-center text-yellow-400'>
@@ -124,7 +97,9 @@ export function EquipmentCategoryAccordion(props: EquipmentCategoryAccordionProp
   return (
     <>
       <div className="p-4! bg-gray-900 border-2 border-gray-700">
-        <button className='p-4! w-full text-white text-start bg-gray-800 h-16' onClick={() => setIsOpen(!isOpen)}>
+        <button className='p-4! w-full text-white text-start bg-gray-800 h-16' onClick={() => {
+          setIsOpen(!isOpen)
+        }}>
           <div className='flex gap-3'>
             <span>{isOpen ? "▼" : "▶"}</span>
             <span>{props.category}</span>

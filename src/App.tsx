@@ -164,7 +164,8 @@ function filterEquipment(masterJson: Record<string, any[]>){
         }
       }).filter((set:any) => set.components.length > 0)
     }
-  });
+  })
+  
 
   return filteredEquipment;
 } 

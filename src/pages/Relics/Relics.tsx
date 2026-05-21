@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RelicReward, Relic, RelicsPageProps, EraAccordionProps } from '../../types/types';
+import { RelicReward, Relic, RelicsPageProps, EraAccordionProps, RelicAccordionProps } from '../../types/types';
 import { invoke } from '@tauri-apps/api/core';
 
 
@@ -114,10 +114,7 @@ export default function Relics(props: RelicsPageProps) {
   }
 
 
-  interface RelicAccordionProps {
-    relic: Relic
-    useAveragePlat: boolean
-  }
+
 
   function RelicAccordion(props: RelicAccordionProps) {
 
