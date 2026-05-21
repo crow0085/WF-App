@@ -23,3 +23,33 @@ export interface EraGroups {
   Axi: Relic[];
   Requiem: Relic[];
 }
+
+export interface RelicsPageProps {
+  relics: EraGroups | undefined;
+  useAveragePlat: boolean;
+  setUseAveragePlat: React.Dispatch<React.SetStateAction<boolean>>;
+  hideVaulted: boolean;
+  setHideVaulted: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+export interface EraAccordionProps {
+  eraName: string;
+  relics: Relic[];
+  useAveragePlat: boolean;
+}
+
+export const categories = [
+  'Arcanes',
+  'Archwing',
+  'Arch-Gun',
+  'Arch-Melee',
+  'Melee',
+  'Mods',
+  'Pets',
+  'Primary',
+  'Relics',
+  'Secondary',
+  'Sentinels',
+  'SentinelWeapons',
+  'Warframes'
+];

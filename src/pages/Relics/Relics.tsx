@@ -1,20 +1,8 @@
 import { useState, useEffect } from 'react';
-import { RelicReward, Relic, EraGroups } from '../../types/types';
+import { RelicReward, Relic, RelicsPageProps, EraAccordionProps } from '../../types/types';
 import { invoke } from '@tauri-apps/api/core';
 
-interface RelicsPageProps {
-  relics: EraGroups | undefined;
-  useAveragePlat: boolean;
-  setUseAveragePlat: React.Dispatch<React.SetStateAction<boolean>>;
-  hideVaulted: boolean;
-  setHideVaulted: React.Dispatch<React.SetStateAction<boolean>>;
-}
 
-interface EraAccordionProps {
-  eraName: string;
-  relics: Relic[];
-  useAveragePlat: boolean;
-}
 
 function getPlatValue(reward: RelicReward, useAveragePlat: boolean): Promise<number> {
   const slug = reward.urlName;
@@ -27,10 +15,7 @@ function getPlatValue(reward: RelicReward, useAveragePlat: boolean): Promise<num
   return invoke("get_plat_value", { url: marketUrl })
     .then((data: any) => {
       const avg = data.data.sell.map((item: any) => item.platinum).reduce((total: number, cur: number) => total + cur, 0) / data.data.sell.length;
-      console.log(`Average platinum: ${avg}`)
       const lowest = data.data.sell[0].platinum;
-      console.log(`Lowest platinum: ${lowest}`)
-      console.log(useAveragePlat)
       const plat = useAveragePlat ? avg : lowest
       return plat
     })

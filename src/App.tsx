@@ -8,7 +8,7 @@ import Equipment from "./pages/Equipment/Equipment";
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { nanoid } from 'nanoid';
-import { RelicReward, Relic, EraGroups } from "./types/types";
+import { RelicReward, Relic, EraGroups, categories } from "./types/types";
 
 export function getRewardRarity(reward: any) {
   switch (reward.chance) {
@@ -78,6 +78,47 @@ export function mapRelicsToEra(relics: Relic[]) {
 
 }
 
+export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
+
+  // first 2 words are the item name, third word is the part
+
+  const primeLookup: Record<string, any[]> = {};
+
+  Object.entries(masterJsonPayload).forEach(([categoryName, itemsArray]) => {
+    if (Array.isArray(itemsArray)) {
+      itemsArray.forEach((item: any) => {
+
+        if (item.isPrime && item.components) {
+          primeLookup[item.name.toLowerCase()] = item.components;
+        }
+      });
+    }
+  });
+
+  const mappedDucats = relics.map((relic: Relic) => {
+    const updatedRwards = relic.rewards.map((reward: RelicReward) => {
+      const itemNameSplit = reward.name.split(" ");
+      const [first, second, ...leftover] = itemNameSplit;
+      if (itemNameSplit.length > 1) {
+        const name: string = [first, second].join(" ").toLowerCase(); // this will be the name of the item set eg Frost Prime
+        let partName = leftover.join(" ").toLowerCase(); // this will contain the rest of the reward part, such as blueprint, chassis blueprint etc        
+        const parts = primeLookup[name];
+        if (leftover.length > 1 && partName.toLowerCase().includes("blueprint"))
+          partName = partName.replace("blueprint", "");
+        if (parts) {
+          const part = parts.find((part: any) => partName.includes(part.name.toLowerCase()))
+          if (part && part.primeSellingPrice) {
+            return { ...reward, ducats: part.ducats };
+          }
+        }
+      }
+      return reward;
+    })
+    return { ...relic, rewards: updatedRwards };
+  })
+  return mappedDucats;
+}
+
 function NavLinkItem(props: any) {
   return (
     <NavLink
@@ -92,7 +133,10 @@ function NavLinkItem(props: any) {
   );
 }
 
-const categories = [
+
+function filterEquipment(masterJson: Record<string, any[]>){
+
+  /*
   'Arcanes',
   'Archwing',
   'Arch-Gun',
@@ -106,67 +150,42 @@ const categories = [
   'Sentinels',
   'SentinelWeapons',
   'Warframes'
-];
-
-export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
-
-  // first 2 words are the item name, third word is the part
-
-  const primeLookup: Record<string, any[]> = {};
-
-  Object.entries(masterJsonPayload).forEach(([categoryName, itemsArray]) => {
-    if (Array.isArray(itemsArray)) {
-      itemsArray.forEach((item: any) => {
-        
-        if (item.isPrime && item.components) {
-          primeLookup[item.name.toLowerCase()] = item.components;
+  */
+  const filteredEquipment: Record<string, any[]> = {};
+  const filterList = ['Archwing','Arch-Gun','Arch-Melee','Melee','Pets','Primary','Secondary','Sentinels','SentinelWeapons','Warframes'];
+  Object.entries(masterJson).forEach(([category, data]) =>{
+    if (filterList.includes(category)){
+      //filteredEquipment[category] = data.filter( d => d.isPrime && d.components?.map( (component: any) => component.tradable));
+      const primeSets = data.filter(d => d.isPrime);
+      filteredEquipment[category] = primeSets.map(set => {
+        return {
+          ...set,
+          components: set.components? set.components.filter( (component: any) => component.tradable) : []
         }
-      });
+      }).filter((set:any) => set.components.length > 0)
     }
   });
 
-  const mappedDucats = relics.map((relic: Relic) => {
-   const updatedRwards = relic.rewards.map((reward: RelicReward) => {    
-      const itemNameSplit = reward.name.split(" ");
-      const [first, second, ...leftover] = itemNameSplit;
-      if (itemNameSplit.length > 1) {
-        const name: string = [first, second].join(" ").toLowerCase(); // this will be the name of the item set eg Frost Prime
-        let partName = leftover.join(" ").toLowerCase(); // this will contain the rest of the reward part, such as blueprint, chassis blueprint etc        
-        const parts = primeLookup[name];
-        if (leftover.length > 1 && partName.toLocaleLowerCase().includes("blueprint"))
-          partName = partName.replace("blueprint", "");
-          console.log(partName)
-        if (parts){
-          const part = parts.find((part: any) => partName.includes(part.name.toLowerCase()))
-          if (part && part.primeSellingPrice){
-            return { ...reward, ducats: part.ducats};
-          }
-        }
-      }
-      return reward;
-    })
-    return {...relic, rewards: updatedRwards};
-  })
+  return filteredEquipment;
+} 
 
-  console.log(primeLookup)
-  return mappedDucats;
-}
 
 export default function App() {
 
   const [relics, setRelics] = useState<EraGroups>();
   const [useAveragePlat, setUseAveragePlat] = useState(false);
   const [hideVaulted, setHideVaulted] = useState(false);
-  const [allItems, setAllItems] = useState();
+  const [allItems, setAllItems] = useState<Record<string, any[]> | undefined>();
+  const [equipment, setEquipment] = useState<Record<string, any[]> | undefined>();
 
-
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     Promise.all(
       categories.map((cat: string) =>
         invoke('get_warframe_items', { category: cat, forceFetch: false })
           .then((statusMsg: any) => {
-            console.log(statusMsg); 
+            console.log(statusMsg);
           })
       )
     )
@@ -181,7 +200,12 @@ export default function App() {
           const mappedByEra = mapRelicsToEra(mappedDucats);
           setRelics(mappedByEra);
         }
+
+        const eqmt = filterEquipment(masterJsonPayload)
+        setEquipment(eqmt);
         setAllItems(masterJsonPayload)
+      }).finally(() => {
+        setIsLoading(false);
       })
       .catch((error) => {
         console.error("Operation failed:", error);
@@ -189,38 +213,50 @@ export default function App() {
 
   }, []);
 
-  useEffect(() => {
-    console.log(allItems)
-  }, [allItems]);
+  // useEffect(() => {
+  //   console.log(allItems)
+  // }, [allItems]);
 
   return (
     <div className="min-h-screen bg-gray-800">
       <Router>
-        <nav className="flex gap-4 border-2 border-gray-700 ">
+        {!isLoading ?(
+          <>
+            <nav className="flex gap-4 border-2 border-gray-700 ">
 
-          <NavLinkItem route="/" title="Home" />
+              <NavLinkItem route="/" title="Home" />
+              <NavLinkItem route="/relics" title="Relics" />
+              <NavLinkItem route="/equipment" title="Prime Sets" />
+            </nav>
 
-          <NavLinkItem route="/relics" title="Relics" />
-
-          <NavLinkItem route="/equipment" title="Equipment" />
-
-        </nav>
-
-        <div className="p-4!">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/relics" element={
-              <Relics
-                relics={relics}
-                useAveragePlat={useAveragePlat}
-                setUseAveragePlat={setUseAveragePlat}
-                hideVaulted={hideVaulted}
-                setHideVaulted={setHideVaulted}
-              />}
-            />
-            <Route path="/equipment" element={<Equipment />} />
-          </Routes>
-        </div>
+            <div className="p-4!">
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/relics" element={
+                  <Relics
+                    relics={relics}
+                    useAveragePlat={useAveragePlat}
+                    setUseAveragePlat={setUseAveragePlat}
+                    hideVaulted={hideVaulted}
+                    setHideVaulted={setHideVaulted}
+                  />}
+                />
+                <Route path="/equipment" element={
+                  <Equipment
+                    Equipment={equipment}
+                  />}
+                />
+              </Routes>
+            </div>
+          </>
+        )
+        :
+        (
+          <>
+            <span className="text-gray-400 ml-auto animate-pulse">Loading Ordis inventory...</span>
+          </>
+        )
+      }
       </Router>
     </div>
   );
