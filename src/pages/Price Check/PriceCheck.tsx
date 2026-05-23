@@ -28,7 +28,6 @@ export default function PriceCheck() {
 
         // If React unmounted us while this async function was waiting, stop immediately!
         if (!isMounted) return;
-
         await register("Backquote", async (event) => {
           if (event.state === "Pressed") {
             console.log("Global backtick pressed!");
@@ -42,7 +41,7 @@ export default function PriceCheck() {
               const path = await getWindowScreenshot(windowId);
               const convertedPath = convertFileSrc(path);
               const unCached = `${convertedPath}?t=${new Date().getTime()}`;
-
+              console.log("image saved to: ", path);
               if (isMounted) setImgPath(unCached);
             }
           }

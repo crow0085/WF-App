@@ -5,11 +5,11 @@ import { EquipmentCategoryAccordion } from "./EquipmentCategoryAccordion";
 
 export default function Equipment(props: EquipmentProps) {
   useEffect(() => {
-    if (props.Equipment) {
-      Object.entries(props.Equipment).map(([category, sets]) => {
-        console.log(`Category: ${category}:`, sets);
-      });
-    }
+    // if (props.Equipment) {
+    //   Object.entries(props.Equipment).map(([category, sets]) => {
+    //     console.log(`Category: ${category}:`, sets);
+    //   });
+    // }
   }, [props.Equipment]);
 
   return (

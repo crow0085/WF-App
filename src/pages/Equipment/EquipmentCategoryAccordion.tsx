@@ -1,8 +1,5 @@
 import { useState } from "react";
-import {
-  EquipmentCategoryAccordionProps,
-  EquipmentSet,
-} from "../../types/types";
+import { EquipmentCategoryAccordionProps, item_set } from "../../types/types";
 import { EquipmentSetAccordion } from "./EquipmentSetAccordion";
 
 export function EquipmentCategoryAccordion(
@@ -27,7 +24,7 @@ export function EquipmentCategoryAccordion(
 
         {isOpen && (
           <ul>
-            {props.sets.map((set: EquipmentSet) => (
+            {props.sets.map((set: item_set) => (
               <EquipmentSetAccordion key={set.name} set={set} />
             ))}
           </ul>

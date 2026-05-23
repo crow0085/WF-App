@@ -42,28 +42,30 @@ export interface EraAccordionProps {
 
 export interface EquipmentCategoryAccordionProps {
   category: string;
-  sets: EquipmentSet[];
+  sets: item_set[];
 }
 
-export interface EquipmentSet {
+export interface item_set {
   name: string;
-  isPrime: boolean;
-  components: SetComponent[];
-  vaulted: boolean;
+  uniqueName: string | undefined;
+  tradable: boolean | undefined;
+  isPrime: boolean | undefined;
+  vaulted: boolean | undefined;
+  components: item_component[];
 }
 
-export interface SetComponent {
-  itemCount: number;
+export interface item_component {
+  uniqueName: string | undefined;
   name: string;
-  ducats: number;
-  plat: number;
-  tradable: boolean;
-  uniqueName: string;
-  type: string;
+  itemCount: number | undefined;
+  tradable: boolean | undefined;
+  plat: number | undefined;
+  ducats: number | undefined;
+  type: string | undefined;
 }
 
 export interface EquipmentSetAccordionProps {
-  set: EquipmentSet;
+  set: item_set;
 }
 
 export interface EquipmentProps {
@@ -90,3 +92,19 @@ export const categories = [
   "SentinelWeapons",
   "Warframes",
 ];
+
+export interface allItems {
+  Arcanes: item_component[];
+  "Arch-Gun": item_set[];
+  "Arch-Melee": item_set[];
+  Archwing: item_set[];
+  Melee: item_set[];
+  Mods: item_component[];
+  Pets: item_set[];
+  Primary: item_set[];
+  Relics: Relic[];
+  Secondary: item_set[];
+  SentinelWeapons: item_set[];
+  Sentinels: item_set[];
+  Warframes: item_set[];
+}

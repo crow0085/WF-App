@@ -239,6 +239,7 @@ pub fn run() {
         .expect("Failed to build global HTTP client");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_http::init())
@@ -247,7 +248,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_warframe_items,
             get_plat_value,
-            merge_json_files
+            merge_json_files,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

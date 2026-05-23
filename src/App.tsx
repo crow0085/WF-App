@@ -4,11 +4,20 @@ import "./App.css";
 import Relics from "./pages/Relics/Relics";
 import Equipment from "./pages/Equipment/Equipment";
 import PriceCheck from "./pages/Price Check/PriceCheck";
+import { stat, writeTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
 
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { nanoid } from "nanoid";
-import { RelicReward, Relic, EraGroups, categories } from "./types/types";
+import {
+  RelicReward,
+  Relic,
+  EraGroups,
+  categories,
+  allItems,
+  item_component,
+  item_set,
+} from "./types/types";
 
 export function getRewardRarity(reward: any) {
   switch (reward.chance) {
@@ -141,21 +150,6 @@ function NavLinkItem(props: any) {
 }
 
 function filterEquipment(masterJson: Record<string, any[]>) {
-  /*
-  'Arcanes',
-  'Archwing',
-  'Arch-Gun',
-  'Arch-Melee',
-  'Melee',
-  'Mods',
-  'Pets',
-  'Primary',
-  'Relics',
-  'Secondary',
-  'Sentinels',
-  'SentinelWeapons',
-  'Warframes'
-  */
   const filteredEquipment: Record<string, any[]> = {};
   const filterList = [
     "Archwing",
@@ -189,11 +183,47 @@ function filterEquipment(masterJson: Record<string, any[]>) {
   return filteredEquipment;
 }
 
+async function generateItemList(allItems: allItems) {
+  let tradableItems: string[] = [];
+
+  Object.entries(allItems).map(([category, itemSet]) => {
+    console.log(category, itemSet);
+    if (category === "Mods" || category === "Arcanes") {
+      const cleaned = itemSet
+        .filter((item: item_component) => item.tradable)
+        .map((item: any) => item.name);
+      tradableItems = [...tradableItems, ...cleaned];
+    } else {
+      // for some reason warframes tradable tag is still false even for primes, but other item sets have a true flag for tradable item sets so we can go based on the tradable property of the set itself, but based on the components.
+      itemSet.map((set: item_set) => {
+        const name = set.name;
+        const tradable = set.components?.filter(
+          (component) => component.tradable,
+        );
+        let fullNames: any = [];
+        if (tradable) {
+          fullNames = [
+            ...fullNames,
+            ...tradable.map((component) => `${name} ${component.name}`),
+          ];
+        }
+        fullNames.map((n: string) => (tradableItems = [...tradableItems, n]));
+      });
+    }
+  });
+
+  const contents = JSON.stringify(tradableItems);
+
+  await writeTextFile("tradable-items.json", contents, {
+    baseDir: BaseDirectory.AppCache,
+  });
+}
+
 export default function App() {
   const [relics, setRelics] = useState<EraGroups>();
   const [useAveragePlat, setUseAveragePlat] = useState(false);
   const [hideVaulted, setHideVaulted] = useState(false);
-  const [allItems, setAllItems] = useState<Record<string, any[]> | undefined>();
+  const [allItems, setAllItems] = useState<allItems | undefined>();
   const [equipment, setEquipment] = useState<
     Record<string, any[]> | undefined
   >();
@@ -205,15 +235,15 @@ export default function App() {
       categories.map((cat: string) =>
         invoke("get_warframe_items", { category: cat, forceFetch: false }).then(
           (statusMsg: any) => {
-            console.log(statusMsg);
+            //console.log(statusMsg);
           },
         ),
       ),
     )
       .then(() => {
-        console.log(
-          "All individual categories ready on disk. Retrieving aggregated master JSON...",
-        );
+        // console.log(
+        //   "All individual categories ready on disk. Retrieving aggregated master JSON...",
+        // );
         return invoke("merge_json_files");
       })
       .then((masterJsonPayload: any) => {
@@ -236,9 +266,12 @@ export default function App() {
       });
   }, []);
 
-  // useEffect(() => {
-  //   console.log(allItems)
-  // }, [allItems]);
+  useEffect(() => {
+    if (allItems && !isLoading) {
+      setIsLoading(true);
+      generateItemList(allItems).finally(() => setIsLoading(false));
+    }
+  }, [allItems]);
 
   return (
     <div className="min-h-screen bg-gray-800">

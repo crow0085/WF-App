@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import {
-  EquipmentSet,
+  item_set,
   EquipmentSetAccordionProps,
-  SetComponent,
+  item_component,
 } from "../../types/types";
 import { invoke } from "@tauri-apps/api/core";
 import { fetch } from "@tauri-apps/plugin-http";
 
 // doing this on the js side instead of react because im lazy
-async function getItemSlugs(primeSet: EquipmentSet) {
+async function getItemSlugs(primeSet: item_set) {
   // https://api.warframe.market/v2/item/{slug}/set
   const setSlug = primeSet.name
     .replace(/[" "]/g, "_")
@@ -32,7 +32,7 @@ async function getItemSlugs(primeSet: EquipmentSet) {
 }
 
 async function getPlatValues(
-  primeSet: EquipmentSet,
+  primeSet: item_set,
   useAveragePlat: Boolean = false,
 ) {
   const slugs: string[] = await getItemSlugs(primeSet);
@@ -82,7 +82,7 @@ async function getPlatValues(
     }
   }
 
-  const mapped = primeSet.components.map((component: SetComponent) => {
+  const mapped = primeSet.components.map((component: item_component) => {
     return {
       ...component,
       plat: platMap[component.name],
@@ -94,7 +94,7 @@ async function getPlatValues(
 
 export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [set, setSet] = useState<EquipmentSet>();
+  const [set, setSet] = useState<item_set>();
   const [isPriceLoading, setIsPriceLoading] = useState(true);
   const [platFetched, setplatFetched] = useState(false);
 
@@ -131,7 +131,7 @@ export function EquipmentSetAccordion(props: EquipmentSetAccordionProps) {
 
       {isOpen && (
         <ul className="border border-gray-700 p-5! ">
-          {set?.components.map((component: SetComponent) => (
+          {set?.components.map((component: item_component) => (
             <div className="" key={component.uniqueName}>
               <li className="flex gap-10 justify-start">
                 <div className="flex gap-2 w-100 text-white">

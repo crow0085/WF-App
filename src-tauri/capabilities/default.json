@@ -15,6 +15,19 @@
         }
       ]
     },
+
+    {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$APPCACHE/**" }]
+    },
+    {
+      "identifier": "fs:allow-stat",
+      "allow": [{ "path": "$APPCACHE/**" }]
+    },
+    {
+      "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$APPCACHE/**" }]
+    },
     "screenshots:default",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
