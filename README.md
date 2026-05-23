@@ -10,12 +10,21 @@ an app i am working on since theres not really any good companion apps for warfr
 - In Game Relic Cracker: i plan to also have an in game tracker where it may read from the EE.log to determine the rewards and price check them to give you the best choice, if not via EE.log i will also be trying to use OCR to price check the relic rewards
 
 ## Some images of the app
- ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%204.png) 
- ##
- ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%201.png) 
- ##
- ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%202.png) 
- ##
- ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%203.png) 
- ##
- ![Screenshot of the prime set page](https://github.com/crow0085/WF-App/blob/main/github-images/prime%20set%20eg) 
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%204.png)
+
+##
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%201.png)
+
+##
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%202.png)
+
+##
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%203.png)
+
+##
+
+![Screenshot of the prime set page](https://github.com/crow0085/WF-App/blob/main/github-images/prime%20set%20eg)

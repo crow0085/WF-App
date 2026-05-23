@@ -1,14 +1,16 @@
-export interface RelicReward { // this is for the item offered from the relic  
+export interface RelicReward {
+  // this is for the item offered from the relic
   rarity: string;
   chance: number;
   name: string;
   ducats: number;
   plat: number;
   id: string;
-  urlName: string
+  urlName: string;
 }
 
-export interface Relic { // this is for the relic itself
+export interface Relic {
+  // this is for the relic itself
   name: string;
   vaulted: boolean;
   era: string;
@@ -56,35 +58,35 @@ export interface SetComponent {
   ducats: number;
   plat: number;
   tradable: boolean;
-  uniqueName: string
-  type: string
+  uniqueName: string;
+  type: string;
 }
 
 export interface EquipmentSetAccordionProps {
-  set: EquipmentSet
+  set: EquipmentSet;
 }
 
 export interface EquipmentProps {
-  Equipment: Record<string, any[]> | undefined
+  Equipment: Record<string, any[]> | undefined;
 }
 
 export interface RelicAccordionProps {
-  relic: Relic
-  useAveragePlat: boolean
+  relic: Relic;
+  useAveragePlat: boolean;
 }
 
 export const categories = [
-  'Arcanes',
-  'Archwing',
-  'Arch-Gun',
-  'Arch-Melee',
-  'Melee',
-  'Mods',
-  'Pets',
-  'Primary',
-  'Relics',
-  'Secondary',
-  'Sentinels',
-  'SentinelWeapons',
-  'Warframes'
+  "Arcanes",
+  "Archwing",
+  "Arch-Gun",
+  "Arch-Melee",
+  "Melee",
+  "Mods",
+  "Pets",
+  "Primary",
+  "Relics",
+  "Secondary",
+  "Sentinels",
+  "SentinelWeapons",
+  "Warframes",
 ];
