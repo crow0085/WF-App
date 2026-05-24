@@ -1,13 +1,24 @@
-import { HashRouter as Router, Routes, Route, NavLink } from "react-router-dom";
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  NavLink,
+  data,
+} from "react-router-dom";
 import Home from "./pages/Home/Home";
 import "./App.css";
 import Relics from "./pages/Relics/Relics";
 import Equipment from "./pages/Equipment/Equipment";
 import PriceCheck from "./pages/Price Check/PriceCheck";
-import { stat, writeTextFile, BaseDirectory } from "@tauri-apps/plugin-fs";
+import {
+  stat,
+  writeTextFile,
+  BaseDirectory,
+  exists,
+  readTextFile,
+} from "@tauri-apps/plugin-fs";
 
 import { useState, useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { nanoid } from "nanoid";
 import {
   RelicReward,
@@ -18,6 +29,7 @@ import {
   item_component,
   item_set,
 } from "./types/types";
+import { fetch } from "@tauri-apps/plugin-http";
 
 export function getRewardRarity(reward: any) {
   switch (reward.chance) {
@@ -149,7 +161,7 @@ function NavLinkItem(props: any) {
   );
 }
 
-function filterEquipment(masterJson: Record<string, any[]>) {
+function filterEquipment(warframeItems: allItems) {
   const filteredEquipment: Record<string, any[]> = {};
   const filterList = [
     "Archwing",
@@ -163,12 +175,12 @@ function filterEquipment(masterJson: Record<string, any[]>) {
     "SentinelWeapons",
     "Warframes",
   ];
-  Object.entries(masterJson).forEach(([category, data]) => {
+  Object.entries(warframeItems).forEach(([category, data]) => {
     if (filterList.includes(category)) {
       //filteredEquipment[category] = data.filter( d => d.isPrime && d.components?.map( (component: any) => component.tradable));
-      const primeSets = data.filter((d) => d.isPrime);
+      const primeSets = data.filter((d: any) => d.isPrime);
       filteredEquipment[category] = primeSets
-        .map((set) => {
+        .map((set: any) => {
           return {
             ...set,
             components: set.components
@@ -212,11 +224,93 @@ async function generateItemList(allItems: allItems) {
     }
   });
 
-  const contents = JSON.stringify(tradableItems);
+  const contents = JSON.stringify(tradableItems, null, 2);
 
   await writeTextFile("tradable-items.json", contents, {
     baseDir: BaseDirectory.AppCache,
   });
+}
+
+async function getWarframeItems() {
+  const forceFetch = false;
+  const refreshTime = 12;
+  const merged = {} as allItems;
+
+  const versionUrl =
+    "https://data.jsdelivr.com/v1/packages/npm/@wfcd/items/resolved";
+
+  const version = await fetch(versionUrl)
+    .then((res: any) => res.json())
+    .then((v) => v.version);
+  console.log(version);
+
+  const fileName = "master-v2.json";
+  const fileExists = await exists(fileName, {
+    baseDir: BaseDirectory.AppCache,
+  });
+
+  let isFresh = false;
+
+  if (fileExists) {
+    const metadata = await stat(fileName, {
+      baseDir: BaseDirectory.AppCache,
+    });
+    const modified = metadata.mtime;
+    const fileAgeMs = Date.now() - modified!.getTime();
+    console.log(`File is ${fileAgeMs / 1000 / 60 / 24} hours old.`);
+    const hoursOld = fileAgeMs / 1000 / 60 / 24;
+    if (hoursOld > refreshTime) isFresh = false;
+    else isFresh = true;
+  }
+
+  if (!isFresh || forceFetch) {
+
+    await Promise.all(
+      categories.map(async (cat: string) => {
+        const url = `https://cdn.jsdelivr.net/npm/@wfcd/items@${version}/data/json/${cat}.json`;
+        const data = await fetch(url)
+          .then((res) => res.json())
+          .then((json) => json);
+        let processed_data = await processCategoryData(cat, data);
+        merged[cat as keyof allItems] = processed_data;
+      }),
+    );
+
+    const contents = JSON.stringify(merged, null, 2);
+    await writeTextFile(fileName, contents, {
+      baseDir: BaseDirectory.AppCache,
+    });
+  } else {
+    const json = await readTextFile(fileName, {
+      baseDir: BaseDirectory.AppCache,
+    });
+
+    const parsed = JSON.parse(json);
+    Object.entries(parsed).map(
+      ([category, items]) =>
+        (merged[category as keyof allItems] = items as any[]),
+    );
+  }
+
+  return merged;
+}
+
+async function processCategoryData(catgory: string, json: any) {
+  // 2. Route the data to the appropriate cleaner based on the requested category
+  switch (catgory) {
+    case "Relics":
+      const cleanData = await cleanRelicData(json);
+      return cleanData;
+    default:
+      return json;
+  }
+}
+
+function cleanRelicData(json: any) {
+  const cleaned = json.filter((item: any) =>
+    item.name.toLowerCase().endsWith("intact"),
+  );
+  return cleaned;
 }
 
 export default function App() {
@@ -231,32 +325,18 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all(
-      categories.map((cat: string) =>
-        invoke("get_warframe_items", { category: cat, forceFetch: false }).then(
-          (statusMsg: any) => {
-            //console.log(statusMsg);
-          },
-        ),
-      ),
-    )
-      .then(() => {
-        // console.log(
-        //   "All individual categories ready on disk. Retrieving aggregated master JSON...",
-        // );
-        return invoke("merge_json_files");
-      })
-      .then((masterJsonPayload: any) => {
-        if (masterJsonPayload.Relics) {
-          const mappedRelics = masterJsonPayload.Relics.map(mapRawToRelic);
-          const mappedDucats = setRelicDucats(mappedRelics, masterJsonPayload);
-          const mappedByEra = mapRelicsToEra(mappedDucats);
-          setRelics(mappedByEra);
-        }
+    getWarframeItems()
+      .then((warframeItems) => {
+        const mappedRelics = warframeItems.Relics.map(mapRawToRelic);
+        const mappedDucats = setRelicDucats(mappedRelics, warframeItems);
+        const mappedByEra = mapRelicsToEra(mappedDucats);
+        setRelics(mappedByEra);
 
-        const eqmt = filterEquipment(masterJsonPayload);
+        const eqmt = filterEquipment(warframeItems);
+        generateItemList(warframeItems);
+
         setEquipment(eqmt);
-        setAllItems(masterJsonPayload);
+        setAllItems(warframeItems);
       })
       .finally(() => {
         setIsLoading(false);
@@ -265,13 +345,6 @@ export default function App() {
         console.error("Operation failed:", error);
       });
   }, []);
-
-  useEffect(() => {
-    if (allItems && !isLoading) {
-      setIsLoading(true);
-      generateItemList(allItems).finally(() => setIsLoading(false));
-    }
-  }, [allItems]);
 
   return (
     <div className="min-h-screen bg-gray-800">

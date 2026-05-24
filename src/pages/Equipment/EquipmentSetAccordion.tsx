@@ -4,7 +4,6 @@ import {
   EquipmentSetAccordionProps,
   item_component,
 } from "../../types/types";
-import { invoke } from "@tauri-apps/api/core";
 import { fetch } from "@tauri-apps/plugin-http";
 
 // doing this on the js side instead of react because im lazy
@@ -40,47 +39,23 @@ async function getPlatValues(
 
   const platMap: Record<string, number> = {};
 
-  // using js fetch
-  // for (const component of primeSet.components){
-  //   const potentialSlug = setName.concat(" ").concat(component.name).replace(/[" "]/g, "_").toLowerCase()
-  //   const slug = slugs.filter( s => s.includes(potentialSlug))[0]
-  //   if (slug){
-  //     const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
-  //     const res = await fetch(marketUrl).then(res => res.json()).then(data => {return data})
-  //     const plat = res.data.sell[0].platinum
-  //     platMap[component.name] = plat
-  //   }
-  // }
-
-  // using the tauri backend invoke
-  for (const component of primeSet.components) {
-    const potentialSlug = setName
-      .concat(" ")
-      .concat(component.name)
-      .replace(/[" "]/g, "_")
-      .toLowerCase();
-    const slug = slugs.filter((s) => s.includes(potentialSlug))[0];
-    if (slug) {
-      const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
-      const plat = await invoke("get_plat_value", { url: marketUrl })
-        .then((data: any) => {
-          const avg =
-            data.data.sell
-              .map((item: any) => item.platinum)
-              .reduce((total: number, cur: number) => total + cur, 0) /
-            data.data.sell.length;
-          const lowest = data.data.sell[0].platinum;
-          const plat = useAveragePlat ? avg : lowest;
-          return plat;
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          return 0;
-        });
-
-      platMap[component.name] = plat;
-    }
-  }
+  await Promise.all(
+    primeSet.components.map(async (component: item_component) => {
+      const potentialSlug = setName.concat(" ").concat(component.name).replace(/[" "]/g, "_").toLowerCase()
+      const slug = slugs.filter( s => s.includes(potentialSlug))[0]
+      console.log(slug);
+      if (!slug) platMap[component.name] = 0;
+      else {
+        const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
+        const res = await fetch(marketUrl)
+          .then((res) => res.json())
+          .then((data) => {
+            return data;
+          });
+        platMap[component.name] = res.data.sell[0].platinum;
+      }
+    }),
+  );
 
   const mapped = primeSet.components.map((component: item_component) => {
     return {

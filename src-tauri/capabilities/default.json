@@ -12,6 +12,12 @@
       "allow": [
         {
           "url": "https://api.warframe.market/v2/*"
+        },
+        {
+          "url": "https://data.jsdelivr.com/v1/packages/npm/@wfcd/*"
+        },
+        {
+          "url": "https://cdn.jsdelivr.net/npm/@wfcd/*"
         }
       ]
     },
@@ -26,6 +32,10 @@
     },
     {
       "identifier": "fs:allow-read-text-file",
+      "allow": [{ "path": "$APPCACHE/**" }]
+    },
+    {
+      "identifier": "fs:allow-exists",
       "allow": [{ "path": "$APPCACHE/**" }]
     },
     "screenshots:default",
