@@ -1,15 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { EquipmentProps } from "../../types/types";
 
 import { EquipmentCategoryAccordion } from "./EquipmentCategoryAccordion";
 
 export default function Equipment(props: EquipmentProps) {
+
+  const [equipment, setEquipment] = useState<Record<string, any[]>>()
+
   useEffect(() => {
     // if (props.Equipment) {
     //   Object.entries(props.Equipment).map(([category, sets]) => {
     //     console.log(`Category: ${category}:`, sets);
     //   });
     // }
+
+      setEquipment(props.Equipment)
   }, [props.Equipment]);
 
   return (
@@ -18,8 +23,8 @@ export default function Equipment(props: EquipmentProps) {
         <h1 className="w-full text-white text-4xl text-center">Prime Sets</h1>
       </div>
 
-      {props.Equipment &&
-        Object.entries(props.Equipment).map(([category, sets]) => {
+      {equipment &&
+        Object.entries(equipment!).map(([category, sets]) => {
           return (
             sets.length > 0 && (
               <EquipmentCategoryAccordion

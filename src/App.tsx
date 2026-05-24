@@ -199,7 +199,6 @@ async function generateItemList(allItems: allItems) {
   let tradableItems: string[] = [];
 
   Object.entries(allItems).map(([category, itemSet]) => {
-    console.log(category, itemSet);
     if (category === "Mods" || category === "Arcanes") {
       const cleaned = itemSet
         .filter((item: item_component) => item.tradable)
@@ -286,7 +285,9 @@ async function getWarframeItems() {
     });
 
     const parsed = JSON.parse(json);
-    Object.entries(parsed).map(
+    const sorted =  Object.fromEntries(Object.entries(parsed).sort(([cat, ], [cat2, ]) => cat.localeCompare(cat2)))
+    
+    Object.entries(sorted).map(
       ([category, items]) =>
         (merged[category as keyof allItems] = items as any[]),
     );
