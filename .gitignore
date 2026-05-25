@@ -21,6 +21,8 @@ node_modules/
 *.local
 .env
 .env.*
+.venv
+python_fastapi/.venv/
 
 # --- Vite / Frontend Tooling ---
 .vite/
