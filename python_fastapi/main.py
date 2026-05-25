@@ -154,7 +154,7 @@ async def get_items(img_path: str):
             search_candidates if search_candidates else CACHED_TRADABLE_ITEMS, 
             processor=utils.default_process,
             scorer=fuzz.ratio,
-            score_cutoff=75.0
+            score_cutoff=80.0
         )
         
         if match:
