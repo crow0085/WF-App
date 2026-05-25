@@ -22,7 +22,10 @@ node_modules/
 .env
 .env.*
 .venv
+
+# --- python fast api stuff
 python_fastapi/.venv/
+python_fastapi/__pycache__/
 
 # --- Vite / Frontend Tooling ---
 .vite/

@@ -228,6 +228,8 @@ async function generateItemList(allItems: allItems) {
   await writeTextFile("tradable-items.json", contents, {
     baseDir: BaseDirectory.AppCache,
   });
+
+  return tradableItems;
 }
 
 async function getWarframeItems() {
@@ -263,7 +265,6 @@ async function getWarframeItems() {
   }
 
   if (!isFresh || forceFetch) {
-
     await Promise.all(
       categories.map(async (cat: string) => {
         const url = `https://cdn.jsdelivr.net/npm/@wfcd/items@${version}/data/json/${cat}.json`;
@@ -285,8 +286,10 @@ async function getWarframeItems() {
     });
 
     const parsed = JSON.parse(json);
-    const sorted =  Object.fromEntries(Object.entries(parsed).sort(([cat, ], [cat2, ]) => cat.localeCompare(cat2)))
-    
+    const sorted = Object.fromEntries(
+      Object.entries(parsed).sort(([cat], [cat2]) => cat.localeCompare(cat2)),
+    );
+
     Object.entries(sorted).map(
       ([category, items]) =>
         (merged[category as keyof allItems] = items as any[]),
@@ -334,11 +337,22 @@ export default function App() {
         setRelics(mappedByEra);
 
         const eqmt = filterEquipment(warframeItems);
-        generateItemList(warframeItems);
 
         setEquipment(eqmt);
         setAllItems(warframeItems);
+
+        return generateItemList(warframeItems);
       })
+      .then((tradable) => {
+        const res = fetch("http://127.0.0.1:8008/api/init-items", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(tradable), // Simple flat string array payload
+        });
+        return res;
+      })
+      .then (res => res.json())
+      .then (res => console.log(res.status))
       .finally(() => {
         setIsLoading(false);
       })

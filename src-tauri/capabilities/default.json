@@ -19,6 +19,10 @@
         {
           "url": "https://cdn.jsdelivr.net/npm/@wfcd/*"
         }
+        ,
+        {
+          "url": "http://127.0.0.1:*"
+        }
       ]
     },
 
