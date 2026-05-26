@@ -11,20 +11,20 @@ an app i am working on since theres not really any good companion apps for warfr
 
 ## Some images of the app
 
-![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%204.png)
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/Relics%20Page.png)
 
 ##
 
-![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%201.png)
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/Prime%20Sets%20Page.png)
 
 ##
 
-![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%202.png)
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/Relics%20Page%20Search.png)
 
 ##
 
-![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20page%203.png)
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/Prime%20Sets%20Search.png)
 
 ##
 
-![Screenshot of the prime set page](https://github.com/crow0085/WF-App/blob/main/github-images/prime%20set%20eg.png)
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/Price%20Checker.png)
