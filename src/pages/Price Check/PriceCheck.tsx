@@ -112,7 +112,7 @@ export default function PriceCheck() {
   }, []);
 
   return (
-    <div>
+    <div className="p-4!">
       <div className=" ">
         <h1 className="w-full text-white text-4xl text-center">
           Price checker

@@ -42,7 +42,7 @@ export default function Equipment(props: EquipmentPageProps) {
   };
 
   return (
-    <>
+    <div className="p-4!">
       <div className=" ">
         <div className=" ">
           <h1 className="w-full text-white text-4xl text-center">Prime Sets</h1>
@@ -94,6 +94,6 @@ export default function Equipment(props: EquipmentPageProps) {
             )
           );
         })}
-    </>
+    </div>
   );
 }

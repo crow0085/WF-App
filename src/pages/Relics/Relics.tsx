@@ -40,10 +40,10 @@ export default function Relics(props: RelicsPageProps) {
   };
 
   return (
-    <>
+    <div className="p-4!">
       {filteredRelics && (
         <>
-          <div className=" ">
+          <div className="">
             <h1 className="w-full text-white text-4xl text-center">
               Relics page
             </h1>
@@ -102,6 +102,6 @@ export default function Relics(props: RelicsPageProps) {
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }

@@ -3,13 +3,17 @@ import {
   Routes,
   Route,
   NavLink,
-  data,
+  Navigate,
 } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import "./App.css";
 import Relics from "./pages/Relics/Relics";
 import Equipment from "./pages/Equipment/Equipment";
 import PriceCheck from "./pages/Price Check/PriceCheck";
+import MasteryTracker from "./pages/MasteryTracker/MasteryTracker";
+import MasteryWarframes from "./pages/MasteryTracker/MasteryWarframes";
+import MasterySecondary from "./pages/MasteryTracker/MasterySecondary";
+
 import {
   stat,
   writeTextFile,
@@ -30,6 +34,7 @@ import {
   item_set,
 } from "./types/types";
 import { fetch } from "@tauri-apps/plugin-http";
+import MasteryPrimary from "./pages/MasteryTracker/MasteryPrimary";
 
 export function getRewardRarity(reward: any) {
   switch (reward.chance) {
@@ -147,11 +152,17 @@ export function setRelicDucats(relics: Relic[], masterJsonPayload: any) {
   return mappedDucats;
 }
 
-function NavLinkItem(props: any) {
+interface NavLinkProps {
+  route: string;
+  title: string;
+  end?: boolean; // Optional prop, defaults to false if not passed
+}
+
+function NavLinkItem(props: NavLinkProps) {
   return (
     <NavLink
       to={props.route}
-      end
+      end={props.end}
       className={({ isActive }) =>
         `p-4! text-center hover:text-blue-200 hover:bg-gray-900 ${isActive ? "text-blue-500 font-semibold" : "text-white font-normal"}`
       }
@@ -366,14 +377,15 @@ export default function App() {
       <Router>
         {!isLoading ? (
           <>
-            <nav className="flex gap-4 border-2 border-gray-700 ">
-              <NavLinkItem route="/" title="Home" />
+            <nav className="flex gap-4 border-b border-gray-700 ">
+              <NavLinkItem route="/" title="Home" end={true} />
               <NavLinkItem route="/relics" title="Relics" />
               <NavLinkItem route="/equipment" title="Prime Sets" />
               <NavLinkItem route="/priceCheck" title="Price Checker" />
+              <NavLinkItem route="/mastery" title="Mastery Tracker" />
             </nav>
 
-            <div className="p-4!">
+            <div className="">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route
@@ -401,6 +413,12 @@ export default function App() {
                   }
                 />
                 <Route path="/priceCheck" element={<PriceCheck />} />
+                <Route path="/mastery" element={<MasteryTracker />}>
+                  <Route index element={<Navigate to="warframes" replace />} />
+                  <Route path="warframes" element={<MasteryWarframes />} />
+                  <Route path="primary" element={<MasteryPrimary />} />
+                  <Route path="secondary" element={<MasterySecondary />} />
+                </Route>
               </Routes>
             </div>
           </>

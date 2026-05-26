@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List
 from rapidocr_onnxruntime import RapidOCR
 from rapidfuzz import process, utils, fuzz 
+import httpx
 
 app = FastAPI()
 engine = RapidOCR()
@@ -172,6 +173,24 @@ async def get_items(img_path: str):
         "status": "success",
         "items": final_verified_items
     }
+
+
+@app.get("/api/wf-stats/{id}")
+async def get_stats(id: str):
+    data = ""
+    url = f"https://api.warframe.com/cdn/getProfileViewingData.php?playerId={id}"
+    try:
+        # Use httpx and await the asynchronous call
+        async with httpx.AsyncClient() as client:
+            res = await client.get(url)
+            
+        if res.status_code == 200:
+            data = res.json()
+            return data
+        return {"error": f"API returned status {res.status_code}"}
+        
+    except httpx.RequestError as e:
+        return {"error": f"An error occurred while requesting {e.request.url}."}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8008, reload=True)
