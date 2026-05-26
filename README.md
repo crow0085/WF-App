@@ -1,6 +1,6 @@
 # WF Companion app
 
-an app i am working on since theres not really any good companion apps for warframe on linx
+an app i am working on since theres not really any good companion apps for warframe on linux
 
 ## Planned Features
 
