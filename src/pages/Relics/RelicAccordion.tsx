@@ -5,17 +5,22 @@ import { fetch } from "@tauri-apps/plugin-http";
 async function getPlatValues(relic: Relic, useAveragePlat: Boolean = false) {
   const platMap: Record<string, number> = {};
 
-  await Promise.all(relic.rewards.map(async (reward: RelicReward) => {
-    const slug = reward.urlName;
-    console.log(slug)
-    if (!slug)
-      platMap[reward.name] = 0
-    else{
-      const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
-      const res = await fetch(marketUrl).then(res => res.json()).then(data => {return data})
-      platMap[reward.name] = res.data.sell[0].platinum;
-    }
-  }));
+  await Promise.all(
+    relic.rewards.map(async (reward: RelicReward) => {
+      const slug = reward.urlName;
+      //console.log(slug);
+      if (!slug) platMap[reward.name] = 0;
+      else {
+        const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;
+        const res = await fetch(marketUrl)
+          .then((res) => res.json())
+          .then((data) => {
+            return data;
+          });
+        platMap[reward.name] = res.data.sell[0].platinum;
+      }
+    }),
+  );
 
   const mapped = relic.rewards.map((reward: RelicReward) => {
     return {

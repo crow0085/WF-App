@@ -41,9 +41,13 @@ async function getPlatValues(
 
   await Promise.all(
     primeSet.components.map(async (component: item_component) => {
-      const potentialSlug = setName.concat(" ").concat(component.name).replace(/[" "]/g, "_").toLowerCase()
-      const slug = slugs.filter( s => s.includes(potentialSlug))[0]
-      console.log(slug);
+      const potentialSlug = setName
+        .concat(" ")
+        .concat(component.name)
+        .replace(/[" "]/g, "_")
+        .toLowerCase();
+      const slug = slugs.filter((s) => s.includes(potentialSlug))[0];
+      //console.log(slug);
       if (!slug) platMap[component.name] = 0;
       else {
         const marketUrl = `https://api.warframe.market/v2/orders/item/${slug}/top`;

@@ -243,7 +243,7 @@ async function getWarframeItems() {
   const version = await fetch(versionUrl)
     .then((res: any) => res.json())
     .then((v) => v.version);
-  console.log(version);
+  //console.log(version);
 
   const fileName = "master-v2.json";
   const fileExists = await exists(fileName, {
@@ -258,7 +258,7 @@ async function getWarframeItems() {
     });
     const modified = metadata.mtime;
     const fileAgeMs = Date.now() - modified!.getTime();
-    console.log(`File is ${fileAgeMs / 1000 / 60 / 24} hours old.`);
+    //console.log(`File is ${fileAgeMs / 1000 / 60 / 24} hours old.`);
     const hoursOld = fileAgeMs / 1000 / 60 / 24;
     if (hoursOld > refreshTime) isFresh = false;
     else isFresh = true;
@@ -351,8 +351,8 @@ export default function App() {
         });
         return res;
       })
-      .then (res => res.json())
-      .then (res => console.log(res.status))
+      .then((res) => res.json())
+      .then((res) => console.log(res.status))
       .finally(() => {
         setIsLoading(false);
       })
@@ -390,7 +390,15 @@ export default function App() {
                 />
                 <Route
                   path="/equipment"
-                  element={<Equipment Equipment={equipment} />}
+                  element={
+                    <Equipment
+                      Equipment={equipment}
+                      useAveragePlat={useAveragePlat}
+                      setUseAveragePlat={setUseAveragePlat}
+                      hideVaulted={hideVaulted}
+                      setHideVaulted={setHideVaulted}
+                    />
+                  }
                 />
                 <Route path="/priceCheck" element={<PriceCheck />} />
               </Routes>

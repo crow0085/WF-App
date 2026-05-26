@@ -34,7 +34,7 @@ export default function PriceCheck() {
         await register("Backquote", async (event) => {
           if (event.state === "Pressed") {
             setIsItemsLoading(true);
-            console.log("Global backtick pressed!");
+            //console.log("Global backtick pressed!");
             const windows = await getScreenshotableWindows();
             const windowRecords: Record<string, number> = {};
             windows.forEach((w) => (windowRecords[w.title] = w.id));
@@ -45,7 +45,7 @@ export default function PriceCheck() {
               const path = await getWindowScreenshot(windowId);
               const convertedPath = convertFileSrc(path);
               const unCached = `${convertedPath}?t=${new Date().getTime()}`;
-              console.log("image saved to: ", path);
+              //console.log("image saved to: ", path);
               if (isMounted) {
                 setImgPath(unCached);
                 const url = `http://127.0.0.1:8008/api/items-from-img/${path}`;
@@ -61,7 +61,7 @@ export default function PriceCheck() {
                   const itemRecord: Record<string, number> = {};
                   await Promise.all(
                     items.map(async (item, index) => {
-                      console.log(item);
+                      //console.log(item);
                       await new Promise((resolve) =>
                         setTimeout(resolve, index * 50),
                       );
@@ -76,15 +76,15 @@ export default function PriceCheck() {
                   );
                   setItems(sorted);
                   setIsItemsLoading(false);
-                  console.log(itemRecord);
+                  //console.log(itemRecord);
                 }
               }
             }
           }
         });
-        console.log(
-          `Global shortcut successfully registered on cycle ${currentCycle}!`,
-        );
+        // console.log(
+        //   `Global shortcut successfully registered on cycle ${currentCycle}!`,
+        // );
       } catch (err) {
         console.error("Failed to register shortcut:", err);
       }
@@ -161,7 +161,7 @@ async function getPlatValue(itemName: string) {
     });
 
   let plat = await res?.data?.sell[0]?.platinum;
-  console.log(itemName, plat, marketUrl);
+  //console.log(itemName, plat, marketUrl);
 
   if (plat === undefined) {
     /* 
@@ -181,7 +181,7 @@ async function getPlatValue(itemName: string) {
       });
 
     plat = await fallbackRes?.data?.sell[0].platinum;
-    console.log(itemName, plat, marketUrl);
+    //console.log(itemName, plat, marketUrl);
   }
 
   return plat | 0;

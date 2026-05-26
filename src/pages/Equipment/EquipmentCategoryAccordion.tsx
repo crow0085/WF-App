@@ -25,7 +25,11 @@ export function EquipmentCategoryAccordion(
         {isOpen && (
           <ul>
             {props.sets.map((set: item_set) => (
-              <EquipmentSetAccordion key={set.name} set={set} />
+              <EquipmentSetAccordion
+                key={set.name}
+                set={set}
+                useAveragePlat={props.useAveragePlat}
+              />
             ))}
           </ul>
         )}

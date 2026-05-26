@@ -1,3 +1,35 @@
+export const categories = [
+  "Arcanes",
+  "Archwing",
+  "Arch-Gun",
+  "Arch-Melee",
+  "Melee",
+  "Mods",
+  "Pets",
+  "Primary",
+  "Relics",
+  "Secondary",
+  "Sentinels",
+  "SentinelWeapons",
+  "Warframes",
+];
+
+export interface allItems {
+  Arcanes: item_component[];
+  "Arch-Gun": item_set[];
+  "Arch-Melee": item_set[];
+  Archwing: item_set[];
+  Melee: item_set[];
+  Mods: item_component[];
+  Pets: item_set[];
+  Primary: item_set[];
+  Relics: Relic[];
+  Secondary: item_set[];
+  SentinelWeapons: item_set[];
+  Sentinels: item_set[];
+  Warframes: item_set[];
+}
+
 export interface RelicReward {
   // this is for the item offered from the relic
   rarity: string;
@@ -40,9 +72,28 @@ export interface EraAccordionProps {
   useAveragePlat: boolean;
 }
 
+export interface RelicAccordionProps {
+  relic: Relic;
+  useAveragePlat: boolean;
+}
+
+export interface EquipmentPageProps {
+  Equipment: Record<string, any[]> | undefined;
+  useAveragePlat: boolean;
+  setUseAveragePlat: React.Dispatch<React.SetStateAction<boolean>>;
+  hideVaulted: boolean;
+  setHideVaulted: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
 export interface EquipmentCategoryAccordionProps {
   category: string;
   sets: item_set[];
+  useAveragePlat: boolean;
+}
+
+export interface EquipmentSetAccordionProps {
+  set: item_set;
+  useAveragePlat: boolean;
 }
 
 export interface item_set {
@@ -62,49 +113,4 @@ export interface item_component {
   plat: number | undefined;
   ducats: number | undefined;
   type: string | undefined;
-}
-
-export interface EquipmentSetAccordionProps {
-  set: item_set;
-}
-
-export interface EquipmentProps {
-  Equipment: Record<string, any[]> | undefined;
-}
-
-export interface RelicAccordionProps {
-  relic: Relic;
-  useAveragePlat: boolean;
-}
-
-export const categories = [
-  "Arcanes",
-  "Archwing",
-  "Arch-Gun",
-  "Arch-Melee",
-  "Melee",
-  "Mods",
-  "Pets",
-  "Primary",
-  "Relics",
-  "Secondary",
-  "Sentinels",
-  "SentinelWeapons",
-  "Warframes",
-];
-
-export interface allItems {
-  Arcanes: item_component[];
-  "Arch-Gun": item_set[];
-  "Arch-Melee": item_set[];
-  Archwing: item_set[];
-  Melee: item_set[];
-  Mods: item_component[];
-  Pets: item_set[];
-  Primary: item_set[];
-  Relics: Relic[];
-  Secondary: item_set[];
-  SentinelWeapons: item_set[];
-  Sentinels: item_set[];
-  Warframes: item_set[];
 }
