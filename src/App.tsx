@@ -32,6 +32,7 @@ import {
   allItems,
   item_component,
   item_set,
+  wfProfile,
 } from "./types/types";
 import { fetch } from "@tauri-apps/plugin-http";
 import MasteryPrimary from "./pages/MasteryTracker/MasteryPrimary";
@@ -336,7 +337,7 @@ export default function App() {
   const [equipment, setEquipment] = useState<
     Record<string, any[]> | undefined
   >();
-
+  const [userData, setUserData] = useState<wfProfile | undefined>();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -382,12 +383,19 @@ export default function App() {
               <NavLinkItem route="/relics" title="Relics" />
               <NavLinkItem route="/equipment" title="Prime Sets" />
               <NavLinkItem route="/priceCheck" title="Price Checker" />
-              <NavLinkItem route="/mastery" title="Mastery Tracker" />
+              {userData && (
+                <NavLinkItem route="/mastery" title="Mastery Tracker" />
+              )}
             </nav>
 
             <div className="">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route
+                  path="/"
+                  element={
+                    <Home setUserData={setUserData} userData={userData} />
+                  }
+                />
                 <Route
                   path="/relics"
                   element={

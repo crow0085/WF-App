@@ -114,3 +114,24 @@ export interface item_component {
   ducats: number | undefined;
   type: string | undefined;
 }
+
+export interface wfProfile {
+  Results: profileResults;
+  Stats: profileStats;
+}
+
+export interface profileResults {
+  AccountId: { $oid: string };
+  DisplayName: string;
+  PlayerLevel: number;
+  GuildName: string;
+}
+
+export interface profileStats {
+  Weapons: profileWeapons[];
+}
+
+export interface profileWeapons {
+  xp: number;
+  type: string; // this is the unique id that will be mapped to the item name
+}

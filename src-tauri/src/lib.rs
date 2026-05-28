@@ -10,15 +10,15 @@ pub fn run() {
     //     .expect("Failed to build global HTTP client");
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_screenshots::init())
         .plugin(tauri_plugin_http::init())
         //.manage(client)
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![
-
-        ])
+        .invoke_handler(tauri::generate_handler![])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
