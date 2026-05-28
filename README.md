@@ -33,3 +33,11 @@ an app i am working on since theres not really any good companion apps for warfr
 ##
 
 ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/mastery%20wrframes.png)
+
+##
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/mastery%20warframes%20maximized.png)
+
+##
+
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/mastery%20primaries%20maximized.png)
