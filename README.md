@@ -3,6 +3,7 @@
 an app i am working on since theres not really any good companion apps for warframe on linux. Note this app relies on apis, as well as ocr. it does not read any data from packets, or read memory or anything like that
 
 ## Planned Features
+
 - Relic Info Page
 - Prime Sets Page:
 - Price Checker: using ocr for warframe inventory (works on prime parts, as well as mods, arcanes etc)
@@ -41,3 +42,8 @@ an app i am working on since theres not really any good companion apps for warfr
 ##
 
 ![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/mastery%20primaries%20maximized.png)
+
+##
+
+price tracker works on relic crack screen as well
+![Screenshot of the relic page](https://github.com/crow0085/WF-App/blob/main/github-images/relic%20price%20check.png)
