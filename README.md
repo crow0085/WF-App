@@ -3,12 +3,12 @@
 an app i am working on since theres not really any good companion apps for warframe on linux
 
 ## Planned Features
-
 - Relic Info Page
 - Prime Sets Page:
-- Price Checker: using ocr for warframe inventory
-- In Game Relic Cracker: using ocr to track end of relic rewards to determine reward based on prices
+- Price Checker: using ocr for warframe inventory (works on prime parts, as well as mods, arcanes etc)
 - mastery tracker
+
+- potentially a relic cracker side app to help track which rewards are best to chose based on plat price when prompted to chose relic reward
 
 ## Some images of the app
 
