@@ -339,6 +339,7 @@ export default function App() {
   >();
   const [userData, setUserData] = useState<wfProfile | undefined>();
   const [isLoading, setIsLoading] = useState(true);
+  const [hideMastered, setHideMastered] = useState(false);
 
   useEffect(() => {
     getWarframeItems()
@@ -424,7 +425,12 @@ export default function App() {
                 <Route
                   path="/mastery"
                   element={
-                    <MasteryTracker profile={userData} allItems={allItems} />
+                    <MasteryTracker
+                      profile={userData}
+                      allItems={allItems}
+                      hideMastered={hideMastered}
+                      setHideMastered={setHideMastered}
+                    />
                   }
                 >
                   <Route index element={<Navigate to="warframes" replace />} />
@@ -434,13 +440,20 @@ export default function App() {
                       <MasteryWarframes
                         profile={userData}
                         allItems={allItems}
+                        hideMastered={hideMastered}
+                        setHideMastered={setHideMastered}
                       />
                     }
                   />
                   <Route
                     path="primary"
                     element={
-                      <MasteryPrimary profile={userData} allItems={allItems} />
+                      <MasteryPrimary
+                        profile={userData}
+                        allItems={allItems}
+                        hideMastered={hideMastered}
+                        setHideMastered={setHideMastered}
+                      />
                     }
                   />
                   <Route path="secondary" element={<MasterySecondary />} />

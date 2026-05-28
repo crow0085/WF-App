@@ -5,6 +5,8 @@ import { allItems, wfProfile } from "../../types/types";
 export interface masteryTrackerProps {
   profile: wfProfile | undefined;
   allItems: allItems | undefined;
+  hideMastered: boolean;
+  setHideMastered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function MasteryTracker(props: masteryTrackerProps) {
@@ -57,6 +59,14 @@ export default function MasteryTracker(props: masteryTrackerProps) {
                   <span className="text-white">
                     {`${props.profile.Results.DisplayName}  ${props.profile.Results.PlayerLevel}`}
                   </span>
+                  <label className="text-white flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={props.hideMastered}
+                      onChange={(e) => props.setHideMastered(e.target.checked)}
+                    />
+                    Hide mastered
+                  </label>
                 </div>
               )}
             </div>

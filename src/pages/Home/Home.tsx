@@ -15,6 +15,7 @@ import { useEffect } from "react";
 export interface homeProps {
   userData: wfProfile | undefined;
   setUserData: React.Dispatch<React.SetStateAction<wfProfile | undefined>>;
+  setProfileLastUpdated: React.Dispatch<React.SetStateAction<Date | null>>;
 }
 
 export default function Home(props: homeProps) {
