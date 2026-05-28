@@ -421,9 +421,22 @@ export default function App() {
                   }
                 />
                 <Route path="/priceCheck" element={<PriceCheck />} />
-                <Route path="/mastery" element={<MasteryTracker />}>
+                <Route
+                  path="/mastery"
+                  element={
+                    <MasteryTracker profile={userData} allItems={allItems} />
+                  }
+                >
                   <Route index element={<Navigate to="warframes" replace />} />
-                  <Route path="warframes" element={<MasteryWarframes />} />
+                  <Route
+                    path="warframes"
+                    element={
+                      <MasteryWarframes
+                        profile={userData}
+                        allItems={allItems}
+                      />
+                    }
+                  />
                   <Route path="primary" element={<MasteryPrimary />} />
                   <Route path="secondary" element={<MasterySecondary />} />
                 </Route>

@@ -1,20 +1,13 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { allItems, wfProfile } from "../../types/types";
 
-export interface player {
-  AccountId: string;
-  DisplayName: string;
-  PlayerLevel: number;
-  Weapons: weapon[];
+export interface masteryTrackerProps {
+  profile: wfProfile | undefined;
+  allItems: allItems | undefined;
 }
 
-// this is actually all warframe items, but on their api its called weapons
-export interface weapon {
-  xp: number;
-  type: string;
-}
-
-export default function MasteryTracker() {
+export default function MasteryTracker(props: masteryTrackerProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-row">
@@ -49,8 +42,16 @@ export default function MasteryTracker() {
         </div>
         <div className="p-4! flex flex-col gap-4">
           <div className="flex flex-col gap-3">
-            <div></div>
-            <div className="pt-4! pl-4! pr-4!">
+            <div>
+              {props.profile && (
+                <div>
+                  <span className="text-white">
+                    {`${props.profile.Results.DisplayName}  ${props.profile.Results.PlayerLevel}`}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div>
               <Outlet />
             </div>
           </div>

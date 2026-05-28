@@ -10,6 +10,7 @@ import {
   readTextFile,
 } from "@tauri-apps/plugin-fs";
 import { fetch } from "@tauri-apps/plugin-http";
+import { useEffect } from "react";
 
 export interface homeProps {
   userData: wfProfile | undefined;
@@ -96,8 +97,18 @@ export default function Home(props: homeProps) {
       });
     }
 
-    console.log(JSON.parse(contents));
+    const parsed = JSON.parse(contents);
+    console.log(parsed);
+
+    props.setUserData({
+      Results: parsed.Results[0],
+      Stats: parsed.Stats,
+    });
   }
+
+  useEffect(() => {
+    if (props.userData) console.log(props.userData.Results.DisplayName);
+  }, [props.userData]);
 
   return (
     <div className="p-4!">

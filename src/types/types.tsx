@@ -103,6 +103,11 @@ export interface item_set {
   isPrime: boolean | undefined;
   vaulted: boolean | undefined;
   components: item_component[];
+  type: string;
+  imageName: string;
+  category: string;
+  marketCost: number | undefined;
+  productCategory: string | undefined;
 }
 
 export interface item_component {
@@ -128,10 +133,10 @@ export interface profileResults {
 }
 
 export interface profileStats {
-  Weapons: profileWeapons[];
+  Weapons: profileWeapon[];
 }
 
-export interface profileWeapons {
+export interface profileWeapon {
   xp: number;
   type: string; // this is the unique id that will be mapped to the item name
 }
