@@ -8,6 +8,7 @@ an app i am working on since theres not really any good companion apps for warfr
 - Prime Sets Page:
 - Price Checker: using ocr for warframe inventory
 - In Game Relic Cracker: using ocr to track end of relic rewards to determine reward based on prices
+- mastery tracker
 
 ## Some images of the app
 
