@@ -140,3 +140,8 @@ export interface profileWeapon {
   xp: number;
   type: string; // this is the unique id that will be mapped to the item name
 }
+
+export interface masteryCardProps {
+  item: item_set;
+  profile: wfProfile | undefined;
+}

@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { allItems, wfProfile } from "../../types/types";
 
@@ -8,6 +8,15 @@ export interface masteryTrackerProps {
 }
 
 export default function MasteryTracker(props: masteryTrackerProps) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // If either piece of data is missing, force them to the home page
+    if (!props.allItems || !props.profile) {
+      navigate("/", { replace: true });
+    }
+  }, [props.allItems, props.profile, navigate]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-row">

@@ -1,12 +1,7 @@
-import { useEffect } from "react";
 import { masteryTrackerProps } from "./MasteryTracker";
-import { item_set, wfProfile, profileWeapon } from "../../types/types";
+import { item_set, masteryCardProps, profileWeapon } from "../../types/types";
 
 export default function MasteryWarframes(props: masteryTrackerProps) {
-  useEffect(() => {
-    console.log(props.allItems?.Warframes);
-  }, [props.allItems]);
-
   return (
     <div>
       <h1 className="w-full text-white text-4xl text-center">Warframes</h1>
@@ -17,7 +12,7 @@ export default function MasteryWarframes(props: masteryTrackerProps) {
               return (
                 <MasteryCard
                   key={frame.uniqueName}
-                  frame={frame}
+                  item={frame}
                   profile={props.profile}
                 />
               );
@@ -26,17 +21,11 @@ export default function MasteryWarframes(props: masteryTrackerProps) {
     </div>
   );
 }
-
-interface masteryCardProps {
-  frame: item_set;
-  profile: wfProfile | undefined;
-}
-
 export function MasteryCard(props: masteryCardProps) {
   function isMastered() {
     const mastered = props.profile?.Stats.Weapons.some(
       (item: profileWeapon) => {
-        if (item.type === props.frame.uniqueName) {
+        if (item.type === props.item.uniqueName) {
           return item.xp > 6000; // 6000 for warframe, 3000 for weapon, 4000 for kuva weapon
         }
       },
@@ -50,11 +39,11 @@ export function MasteryCard(props: masteryCardProps) {
       <div className="flex flex-col items-center justify-between">
         <img
           className=""
-          src={`https://cdn.warframestat.us/img/${props.frame.imageName}`}
+          src={`https://cdn.warframestat.us/img/${props.item.imageName}`}
           alt="Logo"
         />
         <span className="text-white">{`Mastered: ${isMastered()}`}</span>
-        <span className="text-white">{props.frame.name}</span>
+        <span className="text-white">{props.item.name}</span>
       </div>
     </div>
   );

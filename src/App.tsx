@@ -437,7 +437,12 @@ export default function App() {
                       />
                     }
                   />
-                  <Route path="primary" element={<MasteryPrimary />} />
+                  <Route
+                    path="primary"
+                    element={
+                      <MasteryPrimary profile={userData} allItems={allItems} />
+                    }
+                  />
                   <Route path="secondary" element={<MasterySecondary />} />
                 </Route>
               </Routes>
