@@ -74,7 +74,7 @@ export function MasteryCard(props: masteryCardProps) {
     <div className="relative flex p-5! h-67 w-56 bg-gray-900 border border-gray-600">
       {isMastered() ? (
         <div className="absolute top-3 right-3 z-10">
-          <div className="flex items-center justify-center w-8 h-8 border-2 border-green-500 rounded-full">
+          {/*<div className="flex items-center justify-center w-8 h-8 border-2 border-green-500 rounded-full">
             <svg
               className="w-5 h-5 text-green-500"
               fill="none"
@@ -89,7 +89,8 @@ export function MasteryCard(props: masteryCardProps) {
                 d="M5 13l4 4L19 7"
               ></path>
             </svg>
-          </div>
+          </div>*/}
+          <img className="h-7" src="src/images/IconMastered.png"></img>
         </div>
       ) : (
         <div className="absolute top-3 right-3 z-10">
